@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CLIENT
+  OPERATOR
+}
+
+enum StudyStatus {
+  UPLOADED
+  PROCESSING
+  DONE
+  FAILED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role
+
+  studies   Study[]
+
+  createdAt DateTime @default(now())
+}
+
+model Patient {
+  id          String   @id @default(cuid())
+  patientId   String   @unique
+  fullName    String
+  age         Int
+  gender      String
+
+  studies     Study[]
+
+  createdAt   DateTime @default(now())
+}
+
+model Study {
+  id            String       @id @default(cuid())
+
+  modality      String
+  description   String?
+  status        StudyStatus  @default(UPLOADED)
+
+  imagingLink   String?
+
+  s3Path        String?
+
+  userId        String
+  user          User         @relation(fields: [userId], references: [id])
+
+  patientId     String
+  patient       Patient      @relation(fields: [patientId], references: [id])
+
+  report        Report?
+
+  createdAt     DateTime @default(now())
+}
+
+model Report {
+  id          String   @id @default(cuid())
+
+  filePath    String
+
+  studyId     String   @unique
+  study       Study    @relation(fields: [studyId], references: [id])
+
+  createdAt   DateTime @default(now())
+}
