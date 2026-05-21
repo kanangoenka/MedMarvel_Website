@@ -12,45 +12,57 @@ export async function POST(req: Request) {
 
     if (!email || !password) {
       return NextResponse.json(
-        { error: "Email and password are required" },
+        {
+          error:
+            "Email and password are required",
+        },
         { status: 400 }
       );
     }
 
-    const user = await prisma.user.findUnique({
-      where: {
-        email,
-      },
-    });
+    const user =
+      await prisma.user.findUnique({
+        where: {
+          email,
+        },
+      });
 
     if (!user) {
       return NextResponse.json(
-        { error: "Invalid credentials" },
+        {
+          error: "Invalid credentials",
+        },
         { status: 401 }
       );
     }
 
-    const passwordValid = await comparePassword(
-      password,
-      user.password
-    );
+    const passwordValid =
+      await comparePassword(
+        password,
+        user.password
+      );
 
     if (!passwordValid) {
       return NextResponse.json(
-        { error: "Invalid credentials" },
+        {
+          error: "Invalid credentials",
+        },
         { status: 401 }
       );
     }
 
-    const token = generateToken({
-      userId: user.id,
-      email: user.email,
-      role: user.role,
-    });
+    const token =
+      await generateToken({
+        userId: user.id,
+        email: user.email,
+        role: user.role,
+      });
 
-    const response = NextResponse.json({
-      message: "Login successful",
-    });
+    const response =
+      NextResponse.json({
+        message: "Login successful",
+        role: user.role,
+      });
 
     response.cookies.set("token", token, {
       httpOnly: true,
@@ -65,7 +77,9 @@ export async function POST(req: Request) {
     console.error(error);
 
     return NextResponse.json(
-      { error: "Something went wrong" },
+      {
+        error: "Something went wrong",
+      },
       { status: 500 }
     );
   }

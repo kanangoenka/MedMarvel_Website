@@ -47,7 +47,14 @@ export default function LoginPage() {
         return;
       }
 
-      router.push("/dashboard");
+      if (data.role === "OPERATOR") {
+        router.push("/operator/dashboard");
+        } 
+    else {
+  router.push("/client/dashboard");
+}
+
+
     } catch {
       setError("Something went wrong");
     }

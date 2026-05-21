@@ -9,8 +9,12 @@ async function main() {
     10
   );
 
-  await prisma.user.create({
-    data: {
+  await prisma.user.upsert({
+    where: {
+      email: "admin@medvirtuoso.com",
+    },
+    update: {},
+    create: {
       name: "Admin User",
       email: "admin@medvirtuoso.com",
       password: hashedPassword,
@@ -18,7 +22,20 @@ async function main() {
     },
   });
 
-  console.log("Seed user created");
+  await prisma.user.upsert({
+    where: {
+      email: "client@medvirtuoso.com",
+    },
+    update: {},
+    create: {
+      name: "Client User",
+      email: "client@medvirtuoso.com",
+      password: hashedPassword,
+      role: Role.CLIENT,
+    },
+  });
+
+  console.log("Seed users created");
 }
 
 main()
