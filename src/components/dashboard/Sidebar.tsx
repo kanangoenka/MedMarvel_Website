@@ -54,7 +54,7 @@ export default function Sidebar({
       <div className="flex items-center justify-between p-4 border-b border-white/10">
         {!collapsed && (
           <div>
-            <h1 className="text-lg font-bold">
+            <h1 className="text-base font-bold">
               MEDVIRTUOSO
             </h1>
 
