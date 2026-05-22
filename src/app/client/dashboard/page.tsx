@@ -49,40 +49,77 @@ export default function ClientDashboard() {
 
       {/* WORKLIST */}
       <div className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(15,23,42,0.04)] border border-gray-100 overflow-hidden">
-        {/* SEARCH + FILTER */}
-        <div className="p-4 border-b border-gray-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          {/* SEARCH */}
-          <div className="relative w-full md:w-96">
-            <Search
-              size={18}
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-            />
+        
+        {/* WORKLIST HEADER */}
+        <div className="p-5 border-b border-gray-100">
+          
+          {/* TOP ROW */}
+          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-5">
 
-            <input
-              type="text"
-              placeholder="Search patients..."
-              className="w-full pl-11 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500"
-            />
+            {/* LEFT */}
+            <div className="space-y-4 flex-1">
+              
+              <h2 className="text-xl font-semibold text-[#071739]">
+                Worklist
+              </h2>
+
+              {/* SEARCH */}
+              <div className="relative w-full max-w-md">
+                <Search
+                  size={18}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                />
+
+                <input
+                  type="text"
+                  placeholder="Search patients..."
+                  className="w-full pl-11 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+
+            {/* RIGHT */}
+            <div className="flex items-center gap-3 self-start">
+              
+              {/* TOTAL */}
+              <div className="bg-[#f7f9fc] px-5 py-3 rounded-xl border border-gray-100 min-w-[95px]">
+                <p className="text-xs text-gray-500">
+                  Total
+                </p>
+
+                <p className="text-base font-semibold text-[#071739]">
+                  24
+                </p>
+              </div>
+
+              {/* READY */}
+              <div className="bg-[#f7f9fc] px-5 py-3 rounded-xl border border-gray-100 min-w-[95px]">
+                <p className="text-xs text-gray-500">
+                  Ready
+                </p>
+
+                <p className="text-base font-semibold text-green-600">
+                  10
+                </p>
+              </div>
+
+              {/* PENDING */}
+              <div className="bg-[#f7f9fc] px-5 py-3 rounded-xl border border-gray-100 min-w-[95px]">
+                <p className="text-xs text-gray-500">
+                  Pending
+                </p>
+
+                <p className="text-base font-semibold text-yellow-600">
+                  14
+                </p>
+              </div>
+
+              {/* FILTER */}
+              <button className="border border-gray-200 hover:bg-gray-50 px-4 py-3 rounded-xl text-sm transition">
+                Filter
+              </button>
+            </div>
           </div>
-
-          {/* FILTER */}
-          <select className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500">
-            <option>
-              All Status
-            </option>
-
-            <option>
-              Uploaded
-            </option>
-
-            <option>
-              Processing
-            </option>
-
-            <option>
-              Ready
-            </option>
-          </select>
         </div>
 
         {/* TABLE */}
@@ -165,6 +202,7 @@ export default function ClientDashboard() {
 
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
+                      
                       {/* VIEW */}
                       <button className="p-2 rounded-lg hover:bg-blue-50 transition">
                         <Eye
@@ -209,6 +247,7 @@ export default function ClientDashboard() {
       {showModal && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white w-full max-w-4xl rounded-[28px] p-8 shadow-2xl border border-gray-100 overflow-y-auto max-h-[90vh]">
+            
             {/* HEADER */}
             <div className="flex items-center justify-between mb-8">
               <div>
@@ -217,8 +256,7 @@ export default function ClientDashboard() {
                 </h2>
 
                 <p className="text-sm text-gray-500 mt-1">
-                  Upload study details and
-                  documents
+                  Upload study details and documents
                 </p>
               </div>
 
@@ -233,6 +271,7 @@ export default function ClientDashboard() {
             </div>
 
             <div className="space-y-8">
+              
               {/* DOCUMENTS */}
               <div>
                 <h3 className="text-lg font-semibold text-[#071739] mb-3">
@@ -241,10 +280,8 @@ export default function ClientDashboard() {
 
                 <div className="border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center bg-[#fafcff]">
                   <p className="text-sm text-gray-600">
-                    Upload consent forms,
-                    clinical history, CRF,
-                    PDFs, images, DOCX,
-                    etc.
+                    Upload consent forms, clinical history, CRF,
+                    PDFs, images, DOCX, etc.
                   </p>
 
                   <input
@@ -258,8 +295,7 @@ export default function ClientDashboard() {
               {/* IMAGING LINK */}
               <div>
                 <h3 className="text-lg font-semibold text-[#071739] mb-3">
-                  PACS / Drive / Imaging
-                  Link
+                  PACS / Drive / Imaging Link
                 </h3>
 
                 <input
@@ -302,7 +338,7 @@ export default function ClientDashboard() {
                 </div>
               </div>
 
-              {/* MODALITY */}
+              {/* MODALITIES */}
               <div>
                 <h3 className="text-lg font-semibold text-[#071739] mb-5">
                   Modalities
