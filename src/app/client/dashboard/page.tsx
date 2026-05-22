@@ -13,6 +13,7 @@ import {
   Pencil,
   Trash2,
   MessageSquare,
+  Download,
 } from "lucide-react";
 
 export default function ClientDashboard() {
@@ -651,6 +652,22 @@ export default function ClientDashboard() {
                           className="text-purple-600"
                         />
                       </button>
+
+                      <button
+  disabled={
+    study.status !== "READY"
+  }
+  className={`p-2 rounded-lg transition ${
+    study.status === "READY"
+      ? "hover:bg-green-50"
+      : "opacity-40 cursor-not-allowed"
+  }`}
+>
+  <Download
+    size={17}
+    className="text-green-600"
+  />
+</button>
 
                       <button
                         onClick={() =>
