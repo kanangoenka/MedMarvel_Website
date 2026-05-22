@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
-import { prisma } from "@/lib/prisma";
-import { comparePassword } from "@/lib/hash";
+import prisma from "@/lib/prisma";
+import { comparePasswords } from "@/lib/hash";
 import { generateToken } from "@/lib/auth";
 
 export async function POST(req: Request) {
@@ -37,7 +37,7 @@ export async function POST(req: Request) {
     }
 
     const passwordValid =
-      await comparePassword(
+      await comparePasswords(
         password,
         user.password
       );

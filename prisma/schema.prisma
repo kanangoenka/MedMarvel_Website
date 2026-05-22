@@ -64,12 +64,14 @@ model Patient {
 }
 
 model Study {
-  id               String      @id @default(cuid())
-  studyDescription String
-  modality         String
+  id               String       @id @default(cuid())
+
+  studyDescription String?
+  modality         String?
+
   status           StudyStatus @default(UPLOADED)
 
-  patientId String
+  patientId String?
   siteId    String
   userId    String
 
@@ -78,7 +80,7 @@ model Study {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  patient Patient @relation(fields: [patientId], references: [id])
+  patient Patient? @relation(fields: [patientId], references: [id])
 
   site Site @relation(fields: [siteId], references: [id])
 
@@ -90,6 +92,8 @@ model Study {
 
   comments StudyComment[]
 }
+
+
 
 model StudyFile {
   id String @id @default(cuid())

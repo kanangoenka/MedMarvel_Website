@@ -75,6 +75,12 @@ export default function ClientDashboard() {
   const [studies, setStudies] =
     useState<any[]>([]);
 
+  const [searchTerm, setSearchTerm] =
+    useState("");
+
+  const [statusFilter, setStatusFilter] =
+    useState("ALL");
+
   // =========================
   // FETCH STUDIES
   // =========================
@@ -97,6 +103,46 @@ export default function ClientDashboard() {
   useEffect(() => {
     fetchStudies();
   }, []);
+
+  const filteredStudies =
+    studies.filter((study) => {
+
+      const matchesSearch =
+  study.patient?.patientName
+    ?.toLowerCase()
+    .includes(
+      searchTerm.toLowerCase()
+    ) ||
+
+  study.patient?.patientId
+    ?.toLowerCase()
+    .includes(
+      searchTerm.toLowerCase()
+    ) ||
+
+  study.studyDescription
+    ?.toLowerCase()
+    .includes(
+      searchTerm.toLowerCase()
+    ) ||
+
+  study.modality
+    ?.toLowerCase()
+    .includes(
+      searchTerm.toLowerCase()
+    );
+
+      const matchesStatus =
+        statusFilter === "ALL"
+          ? true
+          : study.status ===
+            statusFilter;
+
+      return (
+        matchesSearch &&
+        matchesStatus
+      );
+    });
 
   // =========================
   // FETCH COMMENTS
@@ -402,6 +448,12 @@ export default function ClientDashboard() {
                 <input
                   type="text"
                   placeholder="Search patients..."
+                  value={searchTerm}
+                  onChange={(e) =>
+                    setSearchTerm(
+                      e.target.value
+                    )
+                  }
                   className="w-full pl-11 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -452,9 +504,31 @@ export default function ClientDashboard() {
                 </p>
               </div>
 
-              <button className="border border-gray-200 hover:bg-gray-50 px-4 py-3 rounded-xl text-sm transition">
-                Filter
-              </button>
+              <select
+                value={statusFilter}
+                onChange={(e) =>
+                  setStatusFilter(
+                    e.target.value
+                  )
+                }
+                className="border border-gray-200 hover:bg-gray-50 px-4 py-3 rounded-xl text-sm transition bg-white"
+              >
+                <option value="ALL">
+                  All
+                </option>
+
+                <option value="UPLOADED">
+                  Uploaded
+                </option>
+
+                <option value="PROCESSING">
+                  Processing
+                </option>
+
+                <option value="READY">
+                  Ready
+                </option>
+              </select>
             </div>
           </div>
         </div>
@@ -495,28 +569,28 @@ export default function ClientDashboard() {
             </thead>
 
             <tbody>
-              {studies.map((study) => (
+              {filteredStudies.map((study) => (
                 <tr
                   key={study.id}
                   className="border-t border-gray-100 hover:bg-[#fafcff] transition"
                 >
                   <td className="px-6 py-4 text-sm font-medium text-gray-700">
-                    {study.patient?.patientId}
+                    {study.patient?.patientId || "-"}
                   </td>
 
                   <td className="px-6 py-4 text-sm font-semibold text-[#071739]">
-                    {study.patient?.patientName}
+                    {study.patient?.patientName || "-"}
                   </td>
 
                   <td className="px-6 py-4 text-sm text-gray-700">
-                    {
-                      study.studyDescription
-                    }
-                  </td>
+  {study.studyDescription || "-"}
+</td>
 
-                  <td className="px-6 py-4 text-sm text-gray-700">
-                    {study.modality}
-                  </td>
+<td className="px-6 py-4 text-sm text-gray-700">
+  {study.modality || "-"}
+</td>
+
+                  
 
                   <td className="px-6 py-4">
                     <span
@@ -634,6 +708,39 @@ export default function ClientDashboard() {
             </div>
 
             <div className="space-y-8">
+
+              {/* REQUIRED DOCUMENTS */}
+              <div>
+                <h3 className="text-lg font-semibold text-[#071739] mb-3">
+                  Upload Documents
+                </h3>
+
+                <p className="text-sm text-gray-500 mb-4">
+                  Upload consent forms,
+                  clinical history,
+                  patient information sheets,
+                  case report forms or any
+                  related files.
+                </p>
+
+                <div className="border-2 border-dashed border-gray-300 rounded-2xl p-6 bg-[#fafcff]">
+
+                  <input
+                    type="file"
+                    multiple
+                    required
+                    accept="*"
+                    className="w-full text-sm"
+                  />
+
+                  <p className="text-xs text-gray-400 mt-3">
+                    Accepted formats:
+                    JPG, PNG, PDF, DOCX,
+                    ZIP, DICOM and all
+                    other file types.
+                  </p>
+                </div>
+              </div>
 
               {/* IMAGING LINK */}
               <div>

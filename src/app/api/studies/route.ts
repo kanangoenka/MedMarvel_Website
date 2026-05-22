@@ -21,24 +21,6 @@ export async function POST(
       imagingLink,
     } = body;
 
-    // VALIDATION
-    if (
-      !patientId ||
-      !patientName ||
-      !studyDescription ||
-      !modality
-    ) {
-      return NextResponse.json(
-        {
-          error:
-            "Missing required fields",
-        },
-        {
-          status: 400,
-        }
-      );
-    }
-
     // FIND REAL SITE
     const site =
       await prisma.site.findFirst();
@@ -63,27 +45,39 @@ export async function POST(
       );
     }
 
-    // CREATE PATIENT
-    const patient =
-      await prisma.patient.create({
-        data: {
-          patientId,
-          patientName,
-        },
-      });
+    // OPTIONAL PATIENT CREATION
+    let patient = null;
+
+    if (
+      patientId ||
+      patientName
+    ) {
+      patient =
+        await prisma.patient.create({
+          data: {
+            patientId:
+              patientId || "-",
+
+            patientName:
+              patientName || "-",
+          },
+        });
+    }
 
     // CREATE STUDY
     const study =
       await prisma.study.create({
         data: {
-          studyDescription,
+          studyDescription:
+            studyDescription || "-",
 
-          modality,
+          modality:
+            modality || "-",
 
           imagingLink,
 
           patientId:
-            patient.id,
+            patient?.id || null,
 
           siteId: site.id,
 

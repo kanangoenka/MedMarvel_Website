@@ -1,3 +1,4 @@
+"use client";
 import Image from "next/image";
 
 import {
@@ -58,11 +59,23 @@ height={52}
         </div>
 
         {/* LOGOUT */}
-        <button className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl text-sm transition">
-          <LogOut size={16} />
+        <button
+  onClick={async () => {
 
-          Logout
-        </button>
+    await fetch(
+      "/api/auth/logout",
+      {
+        method: "POST",
+      }
+    );
+
+    window.location.href =
+      "/login";
+  }}
+  className="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-xl transition"
+>
+  Logout
+</button>
       </div>
     </div>
   );
