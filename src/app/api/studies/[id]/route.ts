@@ -67,6 +67,7 @@ export async function PATCH(
   { params }: Params
 ) {
   try {
+
     const { id } =
       await params;
 
@@ -74,40 +75,102 @@ export async function PATCH(
       await request.json();
 
     const {
+      status,
       patientName,
+      patientId,
       studyDescription,
       modality,
       imagingLink,
     } = body;
 
-    // UPDATE STUDY
-    const updatedStudy =
-      await prisma.study.update({
-        where: {
-          id,
-        },
-
-        data: {
-          studyDescription,
-          modality,
-          imagingLink,
-
-          patient: {
-            update: {
-              patientName,
-            },
-          },
-        },
+    // GET EXISTING STUDY
+    const existingStudy =
+      await prisma.study.findUnique({
+        where: { id },
 
         include: {
           patient: true,
         },
       });
 
+    if (!existingStudy) {
+
+      return NextResponse.json(
+        {
+          error:
+            "Study not found",
+        },
+        {
+          status: 404,
+        }
+      );
+    }
+
+    // UPDATE STUDY
+    const updatedStudy =
+      await prisma.study.update({
+
+        where: {
+          id,
+        },
+
+        data: {
+
+          ...(status && {
+            status,
+          }),
+
+          ...(studyDescription !==
+            undefined && {
+            studyDescription,
+          }),
+
+          ...(modality !==
+            undefined && {
+            modality,
+          }),
+
+          ...(imagingLink !==
+            undefined && {
+            imagingLink,
+          }),
+
+          // UPDATE OR CREATE PATIENT
+patient: existingStudy.patient
+  ? {
+      update: {
+        patientName:
+          patientName || "-",
+
+        patientId:
+          patientId || "-",
+      },
+    }
+  : {
+      create: {
+        patientName:
+          patientName || "-",
+
+        patientId:
+          patientId || "-",
+      },
+    },
+
+        },
+
+        include: {
+          patient: true,
+          report: true,
+        },
+
+      });
+
     return NextResponse.json(
       updatedStudy
     );
+
   } catch (error) {
+
     console.error(error);
 
     return NextResponse.json(
@@ -121,3 +184,4 @@ export async function PATCH(
     );
   }
 }
+

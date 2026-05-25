@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 
 export default function OperatorDashboard() {
+
   const [studies, setStudies] =
     useState<any[]>([]);
 
@@ -79,7 +80,9 @@ export default function OperatorDashboard() {
   // FETCH STUDIES
   // =========================
   async function fetchStudies() {
+
     try {
+
       const response =
         await fetch(
           "/api/studies"
@@ -89,7 +92,9 @@ export default function OperatorDashboard() {
         await response.json();
 
       setStudies(data);
+
     } catch (error) {
+
       console.error(error);
     }
   }
@@ -105,6 +110,7 @@ export default function OperatorDashboard() {
     studies.filter((study) => {
 
       return (
+
         study.patient?.patientName
           ?.toLowerCase()
           .includes(
@@ -138,7 +144,9 @@ export default function OperatorDashboard() {
     studyId: string,
     status: string
   ) {
+
     try {
+
       await fetch(
         `/api/studies/${studyId}`,
         {
@@ -158,6 +166,7 @@ export default function OperatorDashboard() {
       await fetchStudies();
 
     } catch (error) {
+
       console.error(error);
     }
   }
@@ -168,6 +177,7 @@ export default function OperatorDashboard() {
   async function fetchComments(
     studyId: string
   ) {
+
     try {
 
       const response =
@@ -181,6 +191,7 @@ export default function OperatorDashboard() {
       setComments(data);
 
     } catch (error) {
+
       console.error(error);
     }
   }
@@ -188,6 +199,7 @@ export default function OperatorDashboard() {
   async function openComments(
     studyId: string
   ) {
+
     setSelectedStudyId(
       studyId
     );
@@ -225,11 +237,13 @@ export default function OperatorDashboard() {
 
             body: JSON.stringify({
               message,
+              role: "OPERATOR",
             }),
           }
         );
 
       if (!response.ok) {
+
         alert(
           "Failed to send message"
         );
@@ -264,17 +278,17 @@ export default function OperatorDashboard() {
 
     setPatientName(
       study.patient?.patientName ||
-        ""
+      ""
     );
 
     setPatientId(
       study.patient?.patientId ||
-        ""
+      ""
     );
 
     setStudyDescription(
       study.studyDescription ||
-        ""
+      ""
     );
 
     setModality(
@@ -307,6 +321,9 @@ export default function OperatorDashboard() {
               patientId,
               studyDescription,
               modality,
+
+              imagingLink:
+                editingStudy?.imagingLink,
             }),
           }
         );
@@ -335,25 +352,29 @@ export default function OperatorDashboard() {
   }
 
   return (
+
     <div className="min-h-screen bg-[#f7f9fc] p-6 space-y-6">
 
       {/* HEADER */}
       <div className="flex items-center justify-between">
 
         <div>
+
           <h1 className="text-3xl font-bold text-[#071739]">
-            Operator Dashboard
+            Operator Worklist
           </h1>
 
           <p className="text-gray-500 mt-1">
-            Review and process incoming studies
+            MedVirtuso
           </p>
+
         </div>
 
-        {/* CARDS */}
+        {/* STATS */}
         <div className="flex items-center gap-3">
 
           <div className="bg-white border border-gray-100 rounded-2xl px-5 py-3 shadow-sm">
+
             <p className="text-xs text-gray-500">
               Total
             </p>
@@ -361,9 +382,11 @@ export default function OperatorDashboard() {
             <p className="text-lg font-semibold text-[#071739]">
               {studies.length}
             </p>
+
           </div>
 
           <div className="bg-white border border-gray-100 rounded-2xl px-5 py-3 shadow-sm">
+
             <p className="text-xs text-gray-500">
               Ready
             </p>
@@ -377,9 +400,11 @@ export default function OperatorDashboard() {
                 ).length
               }
             </p>
+
           </div>
 
           <div className="bg-white border border-gray-100 rounded-2xl px-5 py-3 shadow-sm">
+
             <p className="text-xs text-gray-500">
               Pending
             </p>
@@ -393,6 +418,7 @@ export default function OperatorDashboard() {
                 ).length
               }
             </p>
+
           </div>
 
         </div>
@@ -455,6 +481,10 @@ export default function OperatorDashboard() {
               </th>
 
               <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
+                 Date & Time
+              </th>
+
+              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
                 Actions
               </th>
 
@@ -467,14 +497,9 @@ export default function OperatorDashboard() {
             {filteredStudies.map((study) => {
 
               const missingMetadata =
-                !study.patient
-                  ?.patientName ||
-
-                !study.patient
-                  ?.patientId ||
-
+                !study.patient?.patientName ||
+                !study.patient?.patientId ||
                 !study.studyDescription ||
-
                 !study.modality;
 
               return (
@@ -485,36 +510,29 @@ export default function OperatorDashboard() {
                 >
 
                   {/* PATIENT */}
-                  <td className="px-6 py-4">
+<td className="px-6 py-4">
 
-                    <div>
+  <div>
 
-                      <p className="font-medium text-[#071739]">
-                        {study.patient
-                          ?.patientName ||
-                          "-"}
-                      </p>
+    <p className="font-medium text-[#071739]">
+      {study.patient?.patientName || "-"}
+    </p>
 
-                      <p className="text-sm text-gray-500">
-                        {study.patient
-                          ?.patientId ||
-                          "-"}
-                      </p>
+    <p className="text-sm text-gray-500">
+      {study.patient?.patientId || "-"}
+    </p>
 
-                    </div>
+  </div>
 
-                  </td>
-
+</td>
                   {/* DESCRIPTION */}
                   <td className="px-6 py-4 text-sm text-gray-700">
-                    {study.studyDescription ||
-                      "-"}
+                    {study.studyDescription || "-"}
                   </td>
 
                   {/* MODALITY */}
                   <td className="px-6 py-4 text-sm text-gray-700">
-                    {study.modality ||
-                      "-"}
+                    {study.modality || "-"}
                   </td>
 
                   {/* LINK */}
@@ -523,9 +541,7 @@ export default function OperatorDashboard() {
                     {study.imagingLink ? (
 
                       <a
-                        href={
-                          study.imagingLink
-                        }
+                        href={study.imagingLink}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-2 bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-2 rounded-xl text-xs font-medium transition"
@@ -578,14 +594,11 @@ export default function OperatorDashboard() {
                   <td className="px-6 py-4">
 
                     <select
-                      value={
-                        study.status
-                      }
+                      value={study.status}
                       onChange={(e) =>
                         updateStatus(
                           study.id,
-                          e.target
-                            .value
+                          e.target.value
                         )
                       }
                       className="border border-gray-200 rounded-xl px-3 py-2 text-sm bg-white"
@@ -607,16 +620,25 @@ export default function OperatorDashboard() {
 
                   </td>
 
+                  {/* DATE & TIME */}
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                    {new Date(
+                       study.createdAt
+                      ).toLocaleString()}
+                    </td>
+
                   {/* ACTIONS */}
                   <td className="px-6 py-4">
 
                     <div className="flex items-center gap-2">
 
                       <button className="p-2 rounded-xl hover:bg-blue-50 transition">
+
                         <Eye
                           size={17}
                           className="text-blue-600"
                         />
+
                       </button>
 
                       <button
@@ -627,10 +649,12 @@ export default function OperatorDashboard() {
                         }
                         className="p-2 rounded-xl hover:bg-purple-50 transition"
                       >
+
                         <MessageSquare
                           size={17}
                           className="text-purple-600"
                         />
+
                       </button>
 
                       <button
@@ -641,10 +665,12 @@ export default function OperatorDashboard() {
                         }
                         className="p-2 rounded-xl hover:bg-yellow-50 transition"
                       >
+
                         <Pencil
                           size={17}
                           className="text-yellow-600"
                         />
+
                       </button>
 
                       <label className="p-2 rounded-xl hover:bg-green-50 transition cursor-pointer">
@@ -662,9 +688,7 @@ export default function OperatorDashboard() {
                               e.target
                                 .files?.[0];
 
-                            if (
-                              !file
-                            ) {
+                            if (!file) {
                               return;
                             }
 
@@ -684,7 +708,6 @@ export default function OperatorDashboard() {
                                   {
                                     method:
                                       "POST",
-
                                     body:
                                       formData,
                                   }
@@ -754,6 +777,7 @@ export default function OperatorDashboard() {
             <div className="p-6 border-b border-gray-100 flex items-center justify-between">
 
               <div>
+
                 <h2 className="text-xl font-semibold text-[#071739]">
                   Study Notes
                 </h2>
@@ -761,6 +785,7 @@ export default function OperatorDashboard() {
                 <p className="text-sm text-gray-500 mt-1">
                   Operator ↔ Client communication
                 </p>
+
               </div>
 
               <button
@@ -788,38 +813,66 @@ export default function OperatorDashboard() {
               )}
 
               {comments.map(
-                (comment) => (
+                (comment) => {
 
-                  <div
-                    key={comment.id}
-                    className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm"
-                  >
+                  const isOperator =
+                    comment.user?.role ===
+                    "OPERATOR";
 
-                    <div className="flex items-center justify-between mb-2">
+                  return (
 
-                      <p className="text-sm font-semibold text-[#071739]">
-                        {
-                          comment.user
-                            ?.name
-                        }
-                      </p>
+                    <div
+                      key={comment.id}
+                      className={`flex ${
+                        isOperator
+                          ? "justify-end"
+                          : "justify-start"
+                      }`}
+                    >
 
-                      <p className="text-xs text-gray-400">
-                        {new Date(
-                          comment.createdAt
-                        ).toLocaleString()}
-                      </p>
+                      <div
+                        className={`max-w-[75%] rounded-2xl px-4 py-3 shadow-sm ${
+                          isOperator
+                            ? "bg-[#071739] text-white"
+                            : "bg-white border border-gray-200 text-black"
+                        }`}
+                      >
+
+                        <div className="flex items-center justify-between gap-4 mb-1">
+
+                          <p
+                            className={`text-xs font-semibold ${
+                              isOperator
+                                ? "text-blue-200"
+                                : "text-gray-500"
+                            }`}
+                          >
+                            {comment.user?.name}
+                          </p>
+
+                          <p
+                            className={`text-[11px] ${
+                              isOperator
+                                ? "text-gray-300"
+                                : "text-gray-400"
+                            }`}
+                          >
+                            {new Date(
+                              comment.createdAt
+                            ).toLocaleString()}
+                          </p>
+
+                        </div>
+
+                        <p className="text-sm">
+                          {comment.message}
+                        </p>
+
+                      </div>
 
                     </div>
-
-                    <p className="text-sm text-gray-700">
-                      {
-                        comment.message
-                      }
-                    </p>
-
-                  </div>
-                )
+                  );
+                }
               )}
 
             </div>
@@ -862,94 +915,174 @@ export default function OperatorDashboard() {
       {/* EDIT MODAL */}
       {showEditModal && (
 
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
 
-          <div className="bg-white w-full max-w-xl rounded-[28px] p-8 shadow-2xl">
+          <div className="bg-white w-full max-w-4xl rounded-[32px] p-10 shadow-2xl my-10">
 
-            <div className="flex items-center justify-between mb-8">
+            {/* HEADER */}
+            <div className="flex items-center justify-between mb-10">
 
               <div>
 
-                <h2 className="text-2xl font-semibold text-[#071739]">
-                  Edit Metadata
+                <h2 className="text-3xl font-bold text-[#071739]">
+                  Edit Study Details
                 </h2>
 
-                <p className="text-sm text-gray-500 mt-1">
-                  Complete missing study information
+                <p className="text-gray-500 mt-2">
+                  Complete or correct patient metadata
                 </p>
 
               </div>
 
               <button
                 onClick={() =>
-                  setShowEditModal(
-                    false
-                  )
+                  setShowEditModal(false)
                 }
-                className="text-gray-400 hover:text-black text-2xl"
+                className="text-gray-400 hover:text-black text-3xl"
               >
                 ✕
               </button>
 
             </div>
 
-            <div className="space-y-4">
+            {/* IMAGING LINK */}
+            <div className="mb-8">
+
+              <h3 className="text-xl font-semibold text-[#071739] mb-4">
+                PACS / Drive / Imaging Link
+              </h3>
 
               <input
                 type="text"
-                placeholder="Patient Name"
-                value={patientName}
-                onChange={(e) =>
-                  setPatientName(
-                    e.target.value
-                  )
-                }
-                className="w-full border border-gray-200 rounded-2xl px-5 py-3 text-sm"
-              />
-
-              <input
-                type="text"
-                placeholder="Patient ID"
-                value={patientId}
-                onChange={(e) =>
-                  setPatientId(
-                    e.target.value
-                  )
-                }
-                className="w-full border border-gray-200 rounded-2xl px-5 py-3 text-sm"
-              />
-
-              <input
-                type="text"
-                placeholder="Study Description"
+                placeholder="Paste PACS / Google Drive / Imaging URL"
                 value={
-                  studyDescription
+                  editingStudy?.imagingLink ||
+                  ""
                 }
                 onChange={(e) =>
-                  setStudyDescription(
-                    e.target.value
-                  )
+                  setEditingStudy({
+                    ...editingStudy,
+                    imagingLink:
+                      e.target.value,
+                  })
                 }
-                className="w-full border border-gray-200 rounded-2xl px-5 py-3 text-sm"
+                className="w-full border border-gray-200 rounded-2xl px-5 py-4 text-sm outline-none focus:ring-2 focus:ring-[#071739]"
               />
 
-              <input
-                type="text"
-                placeholder="Modality"
-                value={modality}
-                onChange={(e) =>
-                  setModality(
-                    e.target.value
-                  )
+            </div>
+
+            {/* MANUAL ENTRY */}
+            <div className="mb-8">
+
+              <h3 className="text-xl font-semibold text-[#071739] mb-5">
+                Manual Entry Details
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                <input
+                  type="text"
+                  placeholder="Enter Patient ID"
+                  value={patientId}
+                  onChange={(e) =>
+                    setPatientId(
+                      e.target.value
+                    )
+                  }
+                  className="border border-gray-200 rounded-2xl px-5 py-4 text-sm outline-none focus:ring-2 focus:ring-[#071739]"
+                />
+
+                <input
+                  type="text"
+                  placeholder="Enter Patient Name"
+                  value={patientName}
+                  onChange={(e) =>
+                    setPatientName(
+                      e.target.value
+                    )
+                  }
+                  className="border border-gray-200 rounded-2xl px-5 py-4 text-sm outline-none focus:ring-2 focus:ring-[#071739]"
+                />
+
+                <input
+                  type="text"
+                  placeholder="Enter Study Description"
+                  value={
+                    studyDescription
+                  }
+                  onChange={(e) =>
+                    setStudyDescription(
+                      e.target.value
+                    )
+                  }
+                  className="border border-gray-200 rounded-2xl px-5 py-4 text-sm outline-none focus:ring-2 focus:ring-[#071739]"
+                />
+
+                <select
+                  value={modality}
+                  onChange={(e) =>
+                    setModality(
+                      e.target.value
+                    )
+                  }
+                  className="border border-gray-200 rounded-2xl px-5 py-4 text-sm bg-white outline-none focus:ring-2 focus:ring-[#071739]"
+                >
+
+                  <option value="">
+                    Select Modality
+                  </option>
+
+                  <option value="MRI">
+                    MRI
+                  </option>
+
+                  <option value="CT">
+                    CT
+                  </option>
+
+                  <option value="PET">
+                    PET
+                  </option>
+
+                  <option value="XRAY">
+                    XRAY
+                  </option>
+
+                  <option value="ULTRASOUND">
+                    ULTRASOUND
+                  </option>
+
+                  <option value="DWI">
+                    DWI
+                  </option>
+
+                  <option value="OTHER">
+                    OTHER
+                  </option>
+
+                </select>
+
+              </div>
+
+            </div>
+
+            {/* BUTTONS */}
+            <div className="flex items-center justify-end gap-4 mt-10">
+
+              <button
+                onClick={() =>
+                  setShowEditModal(false)
                 }
-                className="w-full border border-gray-200 rounded-2xl px-5 py-3 text-sm"
-              />
+                className="px-6 py-3 rounded-2xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition"
+              >
+                Cancel
+              </button>
 
               <button
                 onClick={saveMetadata}
-                className="w-full bg-[#071739] hover:bg-[#0b2559] text-white py-3 rounded-2xl font-medium transition"
+                className="bg-[#071739] hover:bg-[#0b2559] text-white px-8 py-3 rounded-2xl font-medium transition"
               >
-                Save Metadata
+                Save Changes
               </button>
 
             </div>
