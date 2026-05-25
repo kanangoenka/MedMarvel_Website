@@ -2,27 +2,26 @@ import { NextResponse } from "next/server";
 
 import prisma from "@/lib/prisma";
 
-type Params = {
-  params: Promise<{
-    id: string;
-  }>;
-};
-
 // =========================
 // GET COMMENTS
 // =========================
 export async function GET(
   request: Request,
-  { params }: Params
+  context: any
 ) {
+
   try {
-    const { id } =
-      await params;
+
+    const params =
+      await context.params;
+
+    const studyId =
+      params.id;
 
     const comments =
       await prisma.studyComment.findMany({
         where: {
-          studyId: id,
+          studyId,
         },
 
         include: {
@@ -37,7 +36,9 @@ export async function GET(
     return NextResponse.json(
       comments
     );
+
   } catch (error) {
+
     console.error(error);
 
     return NextResponse.json(
@@ -57,43 +58,39 @@ export async function GET(
 // =========================
 export async function POST(
   request: Request,
-  { params }: Params
+  context: any
 ) {
+
   try {
-    const { id } =
-      await params;
+
+    const params =
+      await context.params;
+
+    const studyId =
+      params.id;
 
     const body =
       await request.json();
 
-    const { message } =
-      body;
+    const {
+      message,
+      role,
+    } = body;
 
-    if (!message) {
-      return NextResponse.json(
-        {
-          error:
-            "Message required",
-        },
-        {
-          status: 400,
-        }
-      );
-    }
-
-    // TEMP CLIENT USER
+    // FIND USER BY ROLE
     const user =
       await prisma.user.findFirst({
         where: {
-          role: "CLIENT",
+          role,
         },
       });
 
     if (!user) {
+
       return NextResponse.json(
         {
           error:
-            "User not found",
+            "No user found",
         },
         {
           status: 500,
@@ -104,11 +101,11 @@ export async function POST(
     const comment =
       await prisma.studyComment.create({
         data: {
-          studyId: id,
+          message,
+
+          studyId,
 
           userId: user.id,
-
-          message,
         },
 
         include: {
@@ -119,7 +116,9 @@ export async function POST(
     return NextResponse.json(
       comment
     );
+
   } catch (error) {
+
     console.error(error);
 
     return NextResponse.json(

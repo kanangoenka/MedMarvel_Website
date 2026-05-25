@@ -209,8 +209,9 @@ export default function ClientDashboard() {
             },
 
             body: JSON.stringify({
-              message,
-            }),
+                message,
+                role: "CLIENT",
+              }),
           }
         );
 
@@ -945,34 +946,73 @@ export default function ClientDashboard() {
               )}
 
               {comments.map(
-                (comment) => (
-                  <div
-                    key={comment.id}
-                    className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-sm font-semibold text-[#071739]">
-                        {
-                          comment.user
-                            ?.name
-                        }
-                      </p>
+  (comment) => {
 
-                      <p className="text-xs text-gray-400">
-                        {new Date(
-                          comment.createdAt
-                        ).toLocaleString()}
-                      </p>
-                    </div>
+    const isOperator =
+      comment.user?.role ===
+      "OPERATOR";
 
-                    <p className="text-sm text-gray-700">
-                      {
-                        comment.message
-                      }
-                    </p>
-                  </div>
-                )
-              )}
+    return (
+
+      <div
+        key={comment.id}
+        className={`flex ${
+          isOperator
+            ? "justify-end"
+            : "justify-start"
+        }`}
+      >
+
+        <div
+          className={`max-w-[75%] px-4 py-3 rounded-2xl shadow-sm ${
+            isOperator
+              ? "bg-[#071739] text-white rounded-br-md"
+              : "bg-white border border-gray-200 text-black rounded-bl-md"
+          }`}
+        >
+
+          {/* TOP */}
+          <div className="flex items-center justify-between gap-4 mb-1">
+
+            <p
+              className={`text-xs font-semibold ${
+                isOperator
+                  ? "text-blue-200"
+                  : "text-gray-500"
+              }`}
+            >
+              {
+                comment.user?.name
+              }
+            </p>
+
+            <p
+              className={`text-[11px] ${
+                isOperator
+                  ? "text-gray-300"
+                  : "text-gray-400"
+              }`}
+            >
+              {new Date(
+                comment.createdAt
+              ).toLocaleString()}
+            </p>
+
+          </div>
+
+          {/* MESSAGE */}
+          <p className="text-sm leading-relaxed">
+            {
+              comment.message
+            }
+          </p>
+
+        </div>
+
+      </div>
+    );
+  }
+)}
             </div>
 
             {/* INPUT */}
