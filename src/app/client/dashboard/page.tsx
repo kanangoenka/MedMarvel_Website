@@ -809,7 +809,7 @@ export default function ClientDashboard() {
               {/* DETAILS */}
               <div>
                 <h3 className="text-lg font-semibold text-[#071739] mb-5">
-                  Manual Entry Details
+                  OR Manual Entry Details
                 </h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
