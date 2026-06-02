@@ -261,23 +261,28 @@ if (Array.isArray(data)) {
   // =========================
   // DELETE FUNCTION
   // =========================
-  async function handleDelete(id: string) {
+
+  async function handleDelete(
+  id: string
+) {
   try {
 
-    const confirmed = window.confirm(
-      "Delete this study?"
-    );
+    const confirmed =
+      window.confirm(
+        "Delete this study?"
+      );
 
     if (!confirmed) {
       return;
     }
 
-    const response = await fetch(
-      `/api/studies/${id}`,
-      {
-        method: "DELETE",
-      }
-    );
+    const response =
+      await fetch(
+        `/api/studies/${id}`,
+        {
+          method: "DELETE",
+        }
+      );
 
     const data =
       await response.json();
@@ -301,9 +306,9 @@ if (Array.isArray(data)) {
     alert(
       "Failed to delete study"
     );
-
   }
 }
+  
 
   // =========================
   // SUBMIT FUNCTION
@@ -354,9 +359,7 @@ if (Array.isArray(data)) {
   alert("Study updated successfully");
 }
          
-   
-
-      else {
+else {
 
   const response = await fetch("/api/studies", {
     method: "POST",
@@ -378,10 +381,54 @@ if (Array.isArray(data)) {
     throw new Error(data.error);
   }
 
+  const studyId = data.study.id;
+
+  const filesToUpload = [
+
+    mriFile,
+    petFile,
+    dwiFile,
+    otherModalityFile,
+
+    docMedicalHistory,
+    docConsent,
+    docCaseReport,
+    docPatientInfo,
+    docOthers,
+
+  ].filter(Boolean);
+
+  for (const file of filesToUpload) {
+
+    const formData =
+      new FormData();
+
+    formData.append(
+      "file",
+      file as File
+    );
+
+    const uploadResponse =
+      await fetch(
+        `/api/studies/${studyId}/files`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+    if (!uploadResponse.ok) {
+      throw new Error(
+        "Failed to upload file"
+      );
+    }
+  }
+
   await fetchStudies();
 
   alert("Study created successfully");
 }
+   
       // RESET FORM
       setPatientId("");
       setPatientName("");

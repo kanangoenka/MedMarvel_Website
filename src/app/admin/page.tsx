@@ -2,24 +2,39 @@ export default function AdminPage() {
   return (
     <div className="p-8">
 
-      <h1 className="text-3xl font-bold mb-8">
+      <h1 className="text-3xl font-bold text-[#071739]">
         Admin Dashboard
       </h1>
 
-      <div className="grid grid-cols-3 gap-6">
+      <p className="text-gray-500 mt-2">
+        MedVirtuoso Administration
+      </p>
 
-        <a
-          href="/admin/users"
-          className="bg-white rounded-xl shadow p-6 hover:shadow-lg"
-        >
-          <h2 className="text-xl font-semibold">
-            Users
+      <div className="grid grid-cols-4 gap-4 mt-8">
+
+        <div className="bg-white border rounded-2xl p-6">
+          <h2 className="font-semibold">
+            Institutions
           </h2>
+        </div>
 
-          <p className="text-gray-500 mt-2">
-            Manage doctors and operators
-          </p>
-        </a>
+        <div className="bg-white border rounded-2xl p-6">
+          <h2 className="font-semibold">
+            Sites
+          </h2>
+        </div>
+
+        <div className="bg-white border rounded-2xl p-6">
+          <h2 className="font-semibold">
+            Doctors
+          </h2>
+        </div>
+
+        <div className="bg-white border rounded-2xl p-6">
+          <h2 className="font-semibold">
+            Operators
+          </h2>
+        </div>
 
       </div>
 
