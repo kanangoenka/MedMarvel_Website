@@ -2,6 +2,7 @@
 
 import WorklistToolbar from "@/components/client-dashboard/WorklistToolbar";
 import AddCaseModal from "@/components/client-dashboard/AddCaseModal";
+import { useRouter } from "next/navigation";
 
 import {
   useEffect,
@@ -31,7 +32,11 @@ import {
 } from "lucide-react";
 
 export default function ClientDashboard() {
+
+  const router = useRouter();
+
   const [showModal, setShowModal] = useState(false);
+
   const [editingStudyId, setEditingStudyId] = useState<string | null>(null);
 
   // COMMENTS STATES
@@ -495,11 +500,11 @@ export default function ClientDashboard() {
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
                       <button
-                       
-                        className="p-2 rounded-lg hover:bg-blue-50 transition"
-                      >
-                        <Eye size={17} className="text-blue-600" />
-                      </button>
+  onClick={() => router.push(`/viewer/${study.id}`)}
+  className="p-2 rounded-lg hover:bg-blue-50 transition"
+>
+  <Eye size={17} className="text-blue-600" />
+</button>
 
                       <button
                         onClick={() => handleEdit(study)}
