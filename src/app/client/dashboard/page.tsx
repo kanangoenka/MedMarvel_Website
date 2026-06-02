@@ -90,11 +90,12 @@ export default function ClientDashboard() {
 
       const data = await response.json();
 
-      if (data && data.length > 0) {
-        setStudies(data);
-      } else {
-        throw new Error("No data returned");
-      }
+
+if (Array.isArray(data)) {
+  setStudies(data);
+} else {
+  throw new Error("Invalid API response");
+}
     } catch (error) {
       console.error("API failed or unconfigured, seeding mock studies:", error);
       setStudies([
@@ -261,16 +262,48 @@ export default function ClientDashboard() {
   // DELETE FUNCTION
   // =========================
   async function handleDelete(id: string) {
-    try {
-      setStudies((prevStudies) =>
-        prevStudies.filter((study) => study.id !== id)
-      );
-      alert("Study deleted successfully");
-    } catch (error) {
-      console.error(error);
-      alert("Failed to delete study");
+  try {
+
+    const confirmed = window.confirm(
+      "Delete this study?"
+    );
+
+    if (!confirmed) {
+      return;
     }
+
+    const response = await fetch(
+      `/api/studies/${id}`,
+      {
+        method: "DELETE",
+      }
+    );
+
+    const data =
+      await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.error
+      );
+    }
+
+    await fetchStudies();
+
+    alert(
+      "Study deleted successfully"
+    );
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert(
+      "Failed to delete study"
+    );
+
   }
+}
 
   // =========================
   // SUBMIT FUNCTION
@@ -291,63 +324,64 @@ export default function ClientDashboard() {
 
       await new Promise((resolve) => setTimeout(resolve, 800));
 
-      if (editingStudyId) {
-        // UPDATE EXISTING STUDY
-        setStudies((prevStudies) =>
-          prevStudies.map((study) => {
-            if (study.id === editingStudyId) {
-              return {
-                ...study,
-                patient: {
-                  ...study.patient,
-                  patientId,
-                  patientName,
-                  age,
-                  gender,
-                },
-                studyDescription,
-                modality: selectedModalities.join(", "),
-                imagingLink,
-                report: reportUrl
-                  ? {
-                      id: study.report?.id || "report_" + Date.now(),
-                      reportUrl,
-                    }
-                  : null,
-              };
-            }
-            return study;
-          })
-        );
+         if (editingStudyId) {
 
-        alert("Study updated successfully");
-      } else {
-        // CREATE NEW STUDY
-        const newStudy = {
-          id: "study_" + Date.now(),
-          patient: {
-            patientId,
-            patientName,
-            age,
-            gender,
-          },
-          studyDescription,
-          modality: selectedModalities.join(", "),
-          status: "UPLOADED",
-          createdAt: new Date().toISOString(),
-          imagingLink,
-          report: reportUrl
-            ? {
-                id: "report_" + Date.now(),
-                reportUrl,
-              }
-            : null,
-        };
+  const response = await fetch(
+    `/api/studies/${editingStudyId}`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        patientId,
+        patientName,
+        studyDescription,
+        modality: selectedModalities.join(", "),
+        imagingLink,
+      }),
+    }
+  );
 
-        setStudies((prevStudies) => [newStudy, ...prevStudies]);
-        alert("Study created successfully");
-      }
+  const data = await response.json();
 
+  if (!response.ok) {
+    throw new Error(data.error);
+  }
+
+  await fetchStudies();
+
+  alert("Study updated successfully");
+}
+         
+   
+
+      else {
+
+  const response = await fetch("/api/studies", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      patientId,
+      patientName,
+      studyDescription,
+      modality: selectedModalities.join(", "),
+      imagingLink,
+    }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error);
+  }
+
+  await fetchStudies();
+
+  alert("Study created successfully");
+}
       // RESET FORM
       setPatientId("");
       setPatientName("");
