@@ -14,20 +14,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
 type Doctor = {
-  id: string;
-  name: string;
-};
-
-type Institution = {
   id: string;
   name: string;
 };
@@ -44,14 +31,8 @@ export default function AddOperatorDialog() {
   const [password, setPassword] =
     useState("");
 
-  const [institutionId, setInstitutionId] =
-    useState("");
-
   const [doctors, setDoctors] =
     useState<Doctor[]>([]);
-
-  const [institutions, setInstitutions] =
-    useState<Institution[]>([]);
 
   const [selectedDoctors, setSelectedDoctors] =
     useState<string[]>([]);
@@ -62,11 +43,16 @@ export default function AddOperatorDialog() {
   useEffect(() => {
     fetch("/api/admin/doctors")
       .then((res) => res.json())
-      .then(setDoctors);
-
-    fetch("/api/admin/institutions")
-      .then((res) => res.json())
-      .then(setInstitutions);
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setDoctors(data);
+        } else {
+          setDoctors([]);
+        }
+      })
+      .catch(() => {
+        setDoctors([]);
+      });
   }, []);
 
   function toggleDoctor(id: string) {
@@ -82,8 +68,11 @@ export default function AddOperatorDialog() {
       !name ||
       !email ||
       !password ||
-      !institutionId
+      selectedDoctors.length === 0
     ) {
+      alert(
+        "Please fill all fields and select at least one doctor."
+      );
       return;
     }
 
@@ -102,7 +91,6 @@ export default function AddOperatorDialog() {
             name,
             email,
             password,
-            institutionId,
             doctorIds:
               selectedDoctors,
           }),
@@ -118,7 +106,6 @@ export default function AddOperatorDialog() {
       setName("");
       setEmail("");
       setPassword("");
-      setInstitutionId("");
       setSelectedDoctors([]);
     } catch (error) {
       console.error(error);
@@ -171,60 +158,38 @@ export default function AddOperatorDialog() {
             }
           />
 
-          <Select
-            value={institutionId}
-            onValueChange={
-              setInstitutionId
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select Institution" />
-            </SelectTrigger>
-
-            <SelectContent>
-              {institutions.map(
-                (institution) => (
-                  <SelectItem
-                    key={
-                      institution.id
-                    }
-                    value={
-                      institution.id
-                    }
-                  >
-                    {institution.name}
-                  </SelectItem>
-                )
-              )}
-            </SelectContent>
-          </Select>
-
           <div className="border rounded p-3 max-h-40 overflow-y-auto">
 
             <p className="font-medium mb-2">
               Assign Doctors
             </p>
 
-            {doctors.map((doctor) => (
-              <label
-                key={doctor.id}
-                className="flex gap-2 items-center mb-2"
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedDoctors.includes(
-                    doctor.id
-                  )}
-                  onChange={() =>
-                    toggleDoctor(
+            {doctors.length === 0 ? (
+              <p className="text-sm text-gray-500">
+                No doctors found.
+              </p>
+            ) : (
+              doctors.map((doctor) => (
+                <label
+                  key={doctor.id}
+                  className="flex gap-2 items-center mb-2"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedDoctors.includes(
                       doctor.id
-                    )
-                  }
-                />
+                    )}
+                    onChange={() =>
+                      toggleDoctor(
+                        doctor.id
+                      )
+                    }
+                  />
 
-                {doctor.name}
-              </label>
-            ))}
+                  {doctor.name}
+                </label>
+              ))
+            )}
 
           </div>
 

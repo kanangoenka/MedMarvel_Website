@@ -11,6 +11,7 @@ export async function GET() {
       include: {
         institution: true,
         site: true,
+        
       },
       orderBy: {
         name: "asc",

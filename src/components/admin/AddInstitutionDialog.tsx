@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 
+
 import {
   Dialog,
   DialogContent,
@@ -16,6 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 
 export default function AddInstitutionDialog() {
+    const router = useRouter();
   const [name, setName] = useState("");
   const [loading, setLoading] =
     useState(false);
