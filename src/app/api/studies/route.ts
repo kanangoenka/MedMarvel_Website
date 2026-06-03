@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import prisma from "@/lib/prisma";
-
+import { getCurrentUser } from "@/lib/current-user";
 
 // =========================
 // CREATE STUDY
@@ -21,31 +21,41 @@ export async function POST(
       imagingLink,
     } = body;
 
-    // FIND REAL SITE
-    const site =
-      await prisma.site.findFirst();
-
-    // FIND REAL CLIENT USER
     const user =
-      await prisma.user.findFirst({
-        where: {
-          role: "CLIENT",
-        },
-      });
+      await getCurrentUser();
 
-    if (!site || !user) {
+    if (!user) {
       return NextResponse.json(
         {
-          error:
-            "Missing site or user",
+          error: "Unauthorized",
         },
         {
-          status: 500,
+          status: 401,
         }
       );
     }
 
-    // OPTIONAL PATIENT CREATION
+    const site =
+      user.siteId
+        ? await prisma.site.findUnique({
+            where: {
+              id: user.siteId,
+            },
+          })
+        : null;
+
+    if (!site) {
+      return NextResponse.json(
+        {
+          error:
+            "Doctor is not assigned to a site",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
     let patient = null;
 
     if (
@@ -64,7 +74,6 @@ export async function POST(
         });
     }
 
-    // CREATE STUDY
     const study =
       await prisma.study.create({
         data: {
@@ -85,10 +94,10 @@ export async function POST(
         },
 
         include: {
-  patient: true,
-  report: true,
-  files: true,
-},
+          patient: true,
+          report: true,
+          files: true,
+        },
       });
 
     return NextResponse.json({
@@ -110,24 +119,85 @@ export async function POST(
   }
 }
 
-
 // =========================
 // FETCH STUDIES
 // =========================
 export async function GET() {
   try {
-    const studies =
-      await prisma.study.findMany({
-        include: {
-  patient: true,
-  report: true,
-  files: true,
-},
+    const user =
+      await getCurrentUser();
 
-        orderBy: {
-          createdAt: "desc",
+    if (!user) {
+      return NextResponse.json(
+        {
+          error: "Unauthorized",
         },
-      });
+        {
+          status: 401,
+        }
+      );
+    }
+
+    let studies: any[] = [];
+
+    if (user.role === "ADMIN") {
+      studies =
+        await prisma.study.findMany({
+          include: {
+            patient: true,
+            report: true,
+            files: true,
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+        });
+    } else if (
+      user.role === "CLIENT"
+    ) {
+      studies =
+        await prisma.study.findMany({
+          where: {
+            userId: user.id,
+          },
+
+          include: {
+            patient: true,
+            report: true,
+            files: true,
+          },
+
+          orderBy: {
+            createdAt: "desc",
+          },
+        });
+    } else if (
+      user.role === "OPERATOR"
+    ) {
+      const doctorIds =
+        user.assignedDoctors.map(
+          (doctor) => doctor.id
+        );
+
+      studies =
+        await prisma.study.findMany({
+          where: {
+            userId: {
+              in: doctorIds,
+            },
+          },
+
+          include: {
+            patient: true,
+            report: true,
+            files: true,
+          },
+
+          orderBy: {
+            createdAt: "desc",
+          },
+        });
+    }
 
     return NextResponse.json(
       studies
