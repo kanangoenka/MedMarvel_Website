@@ -31,6 +31,9 @@ export default function OperatorDashboard() {
 
   const [searchTerm, setSearchTerm] =
     useState("");
+  
+  const [operator, setOperator] =
+  useState<any>(null);
 
   // =========================
   // COMMENTS
@@ -97,10 +100,19 @@ export default function OperatorDashboard() {
           "/api/studies"
         );
 
+      if (response.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
+
       const data =
         await response.json();
 
-      setStudies(data);
+      setStudies(
+        Array.isArray(data)
+        ? data
+        : []
+      );
 
     } catch (error) {
 
@@ -110,6 +122,25 @@ export default function OperatorDashboard() {
 
   useEffect(() => {
     fetchStudies();
+
+    const fetchOperator = async () => {
+      try {
+        const response = await fetch("/api/auth/me");
+        if (response.status === 401) {
+          window.location.href = "/login";
+          return;
+        }
+        if (!response.ok) {
+          throw new Error("Failed to fetch operator");
+        }
+        const data = await response.json();
+        setOperator(data);
+      } catch (error) {
+        console.error("Error fetching operator:", error);
+      }
+    };
+
+    fetchOperator();
   }, []);
 
   // =========================
@@ -393,20 +424,20 @@ function downloadFiles(
 
   return (
 
-    <div className="min-h-screen bg-[#f7f9fc] p-6 space-y-6">
+    <div className="space-y-6">
 
       {/* HEADER */}
       <div className="flex items-center justify-between">
 
         <div>
-
-          <h1 className="text-3xl font-bold text-[#071739]">
-            Operator Worklist
-          </h1>
-
-          <p className="text-gray-500 mt-1">
-            MedVirtuso
-          </p>
+          <h3 className="text-gray-500 mt-2">
+            Assigned Doctors:{" "}
+            {operator?.assignedDoctors?.length
+            ? operator.assignedDoctors
+              .map((doctor : any) => doctor.name)
+              .join(", ")
+            : "No doctors assigned"}
+          </h3>
 
         </div>
 

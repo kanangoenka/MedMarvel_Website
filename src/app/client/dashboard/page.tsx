@@ -84,6 +84,11 @@ export default function ClientDashboard() {
     try {
       const response = await fetch("/api/studies");
 
+      if (response.status === 401) {
+        router.push("/login");
+        return;
+      }
+
       if (!response.ok) {
         throw new Error("API failed");
       }

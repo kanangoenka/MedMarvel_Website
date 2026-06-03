@@ -1,25 +1,35 @@
+import { getCurrentUser } from "@/lib/current-user";
+import { redirect } from "next/navigation";
+import prisma from "@/lib/prisma";
+
 export default async function ViewerPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
   const { id } = await params;
 
   let study: any = null;
 
   try {
-    const studyRes = await fetch(
-      `http://localhost:3000/api/studies/${id}`,
-      {
-        cache: "no-store",
-      }
-    );
-
-    if (studyRes.ok) {
-      study = await studyRes.json();
-    }
+    study = await prisma.study.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        patient: true,
+        report: true,
+        files: true,
+      },
+    });
   } catch (error) {
-    console.error(error);
+    console.error("Error fetching study in ViewerPage:", error);
   }
 
   return (

@@ -22,7 +22,7 @@ export async function POST(
     } = body;
 
     const user =
-      await getCurrentUser();
+      await getCurrentUser() as any;
 
     if (!user) {
       return NextResponse.json(
@@ -43,7 +43,9 @@ export async function POST(
             },
           })
         : null;
-
+      console.log("USER =", user)
+      console.log("SITE ID =", user.siteId)
+      console.log("ROLE =", user.role)
     if (!site) {
       return NextResponse.json(
         {
@@ -125,7 +127,7 @@ export async function POST(
 export async function GET() {
   try {
     const user =
-      await getCurrentUser();
+      await getCurrentUser() as any;
 
     if (!user) {
       return NextResponse.json(
@@ -176,7 +178,7 @@ export async function GET() {
     ) {
       const doctorIds =
         user.assignedDoctors.map(
-          (doctor) => doctor.id
+          (doctor: any) => doctor.id
         );
 
       studies =

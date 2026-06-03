@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import prisma from "@/lib/prisma";
 import { Building2, MapPin, Stethoscope, UserCog } from "lucide-react";
 
@@ -42,7 +44,7 @@ export default async function AdminPage() {
     });
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-[#071739] font-sans pb-12">
+    <div className="text-[#071739] font-sans pb-12">
       {/* Header Container */}
       <div className="bg-white border-b border-gray-100 shadow-[0_1px_3px_rgba(15,23,42,0.02)]">
         <div className="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row md:items-center justify-between gap-4">

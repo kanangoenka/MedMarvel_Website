@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import prisma from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/current-user";
 
 type Params = {
   params: Promise<{
@@ -13,6 +14,14 @@ export async function GET(
   { params }: Params
 ) {
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
     const { id } = await params;
 
     const study =
@@ -56,6 +65,14 @@ export async function DELETE(
   { params }: Params
 ) {
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
     const { id } =
       await params;
 
@@ -110,6 +127,13 @@ export async function PATCH(
   { params }: Params
 ) {
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
 
     const { id } =
       await params;

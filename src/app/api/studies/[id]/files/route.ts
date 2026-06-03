@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import prisma from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/current-user";
 
 import fs from "fs";
 import path from "path";
@@ -12,6 +13,13 @@ export async function POST(
   context: any
 ) {
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
 
     const params =
       await context.params;
