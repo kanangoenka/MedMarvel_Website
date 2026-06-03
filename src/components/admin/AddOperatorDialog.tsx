@@ -99,8 +99,12 @@ export default function AddOperatorDialog() {
       );
 
       if (!response.ok) {
-        throw new Error();
-      }
+  const data = await response.json();
+
+  alert(data.error);
+
+  return;
+}
 
       router.refresh();
 
