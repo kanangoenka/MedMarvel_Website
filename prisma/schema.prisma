@@ -37,18 +37,21 @@ model Site {
   institution Institution @relation(fields: [institutionId], references: [id])
 
   studies Study[]
+
+  users User[]
 }
 
 model User {
-  id       String   @id @default(cuid())
+  id String @id @default(cuid())
 
   name     String
-  email    String   @unique
+  email    String @unique
   password String
 
-  role     UserRole
+  role UserRole
 
   institutionId String
+  siteId        String?
 
   assignedOperatorId String?
 
@@ -57,6 +60,8 @@ model User {
   assignedDoctors User[] @relation("OperatorAssignments")
 
   institution Institution @relation(fields: [institutionId], references: [id])
+
+  site Site? @relation(fields: [siteId], references: [id])
 
   studies Study[]
 
@@ -73,12 +78,12 @@ model Patient {
 }
 
 model Study {
-  id               String       @id @default(cuid())
+  id String @id @default(cuid())
 
   studyDescription String?
   modality         String?
 
-  status           StudyStatus @default(UPLOADED)
+  status StudyStatus @default(UPLOADED)
 
   patientId String?
   siteId    String
@@ -101,8 +106,6 @@ model Study {
 
   comments StudyComment[]
 }
-
-
 
 model StudyFile {
   id String @id @default(cuid())
