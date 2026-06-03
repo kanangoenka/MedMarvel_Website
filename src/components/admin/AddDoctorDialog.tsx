@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -107,25 +108,30 @@ export default function AddDoctorDialog() {
 
   return (
     <Dialog>
-      <DialogTrigger className="mt-4 w-full">
-        Add New
-      </DialogTrigger>
+      <DialogTrigger
+        render={
+          <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-2 h-10 flex items-center justify-center gap-1.5 font-medium transition-all border-none shadow-xs cursor-pointer">
+            <Plus className="w-4 h-4" />
+            Add New
+          </Button>
+        }
+      />
 
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>
+      <DialogContent className="rounded-2xl border border-gray-100 p-6 shadow-xl bg-white max-w-sm w-full">
+        <DialogHeader className="pb-2">
+          <DialogTitle className="text-lg font-bold text-[#071739]">
             Add Doctor
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
-
+        <div className="space-y-4 mt-2">
           <Input
             placeholder="Doctor Name"
             value={name}
             onChange={(e) =>
               setName(e.target.value)
             }
+            className="rounded-xl border border-gray-200 px-3.5 py-2.5 h-10 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white shadow-xs transition-all"
           />
 
           <Input
@@ -134,6 +140,7 @@ export default function AddDoctorDialog() {
             onChange={(e) =>
               setEmail(e.target.value)
             }
+            className="rounded-xl border border-gray-200 px-3.5 py-2.5 h-10 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white shadow-xs transition-all"
           />
 
           <Input
@@ -143,21 +150,23 @@ export default function AddDoctorDialog() {
             onChange={(e) =>
               setPassword(e.target.value)
             }
+            className="rounded-xl border border-gray-200 px-3.5 py-2.5 h-10 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white shadow-xs transition-all"
           />
 
           <Select
             value={siteId}
-            onValueChange={setSiteId}
+            onValueChange={(val) => setSiteId(val ?? "")}
           >
-            <SelectTrigger>
+            <SelectTrigger className="w-full rounded-xl border border-gray-200 px-3.5 h-10 text-sm bg-white text-left text-gray-700 shadow-xs focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all">
               <SelectValue placeholder="Select Site" />
             </SelectTrigger>
 
-            <SelectContent>
+            <SelectContent className="rounded-xl border border-gray-100 bg-white p-1 shadow-lg max-h-60 overflow-y-auto z-[9999]">
               {sites.map((site) => (
                 <SelectItem
                   key={site.id}
                   value={site.id}
+                  className="rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 focus:bg-blue-50 focus:text-blue-700 cursor-pointer transition-colors"
                 >
                   {site.name}
                 </SelectItem>
@@ -166,7 +175,7 @@ export default function AddDoctorDialog() {
           </Select>
 
           <Button
-            className="w-full"
+            className="w-full bg-[#071739] hover:bg-[#0b2559] text-white rounded-xl py-2 h-10 font-semibold transition-all border-none mt-2 cursor-pointer"
             onClick={handleSubmit}
             disabled={loading}
           >
@@ -174,7 +183,6 @@ export default function AddDoctorDialog() {
               ? "Saving..."
               : "Save"}
           </Button>
-
         </div>
       </DialogContent>
     </Dialog>
