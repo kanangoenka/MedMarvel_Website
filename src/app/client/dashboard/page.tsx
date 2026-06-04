@@ -49,17 +49,18 @@ export default function ClientDashboard() {
   const [reportUrl, setReportUrl] = useState("");
 
   // MODALITY UPLOAD STATES
-  const [mriFile, setMriFile] = useState<File | string | null>(null);
-  const [petFile, setPetFile] = useState<File | string | null>(null);
-  const [dwiFile, setDwiFile] = useState<File | string | null>(null);
-  const [otherModalityFile, setOtherModalityFile] = useState<File | string | null>(null);
+  const [mriFile, setmriFile] = useState<File[]>([]);
+  const [petFile, setPetFile] = useState<File[]>([]);
+  const [dwiFile, setDwiFile] = useState<File[]>([]);
+  const [otherModalityFiles, setOtherModalityFiles] = useState<File[]>([]);
+  const [folderFiles, setFolderFiles] = useState<File[]>([]);
 
   // DOCUMENT UPLOAD STATES
-  const [docMedicalHistory, setDocMedicalHistory] = useState<File | string | null>(null);
-  const [docConsent, setDocConsent] = useState<File | string | null>(null);
-  const [docCaseReport, setDocCaseReport] = useState<File | string | null>(null);
-  const [docPatientInfo, setDocPatientInfo] = useState<File | string | null>(null);
-  const [docOthers, setDocOthers] = useState<File | string | null>(null);
+  const [docMedicalHistory, setDocMedicalHistory] = useState<File[]>([]);
+  const [docConsent, setDocConsent] = useState<File[]>([]);
+  const [docCaseReport, setDocCaseReport] = useState<File[]>([]);
+  const [docPatientInfo, setDocPatientInfo] = useState<File[]>([]);
+  const [docOthers, setDocOthers] = useState<File[]>([]);
 
   const [loading, setLoading] = useState(false);
 
@@ -260,15 +261,16 @@ export default function ClientDashboard() {
     setExistingFiles(study.files || []);
 
     // Reset file states (clear any previous selections)
-    setMriFile(null);
-    setPetFile(null);
-    setDwiFile(null);
-    setOtherModalityFile(null);
-    setDocMedicalHistory(null);
-    setDocConsent(null);
-    setDocCaseReport(null);
-    setDocPatientInfo(null);
-    setDocOthers(null);
+    setmriFile([]);
+    setPetFile([]);
+    setDwiFile([]);
+    setOtherModalityFiles([]);
+    setFolderFiles([]);
+    setDocMedicalHistory([]);
+    setDocConsent([]);
+    setDocCaseReport([]);
+    setDocPatientInfo([]);
+    setDocOthers([]);
 
     setShowModal(true);
   }
@@ -313,8 +315,9 @@ export default function ClientDashboard() {
       setLoading(true);
       await new Promise((resolve) => setTimeout(resolve, 800));
 
-      if (editingStudyId) {
+      let studyId = editingStudyId;
 
+      if (editingStudyId) {
         const response = await fetch(`/api/studies/${editingStudyId}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -329,12 +332,7 @@ export default function ClientDashboard() {
 
         const data = await response.json();
         if (!response.ok) throw new Error(data.error);
-
-        await fetchStudies();
-        alert("Study updated successfully");
-
       } else {
-
         const response = await fetch("/api/studies", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -350,23 +348,34 @@ export default function ClientDashboard() {
         const data = await response.json();
         if (!response.ok) throw new Error(data.error);
 
-        const studyId = data.study.id;
+        studyId = data.study.id;
+      }
 
-        const filesToUpload = [
-          mriFile,
-          petFile,
-          dwiFile,
-          otherModalityFile,
-          docMedicalHistory,
-          docConsent,
-          docCaseReport,
-          docPatientInfo,
-          docOthers,
-        ].filter(Boolean);
+      // Group all selected files by category for batch upload
+      const fileCategories = [
+        { category: "mri", files: mriFile },
+        { category: "pet", files: petFile },
+        { category: "dwi", files: dwiFile },
+        { category: "other", files: otherModalityFiles },
+        { category: "folder", files: folderFiles },
+        { category: "document", files: docMedicalHistory, docType: "medical_history" },
+        { category: "document", files: docConsent, docType: "consent" },
+        { category: "document", files: docCaseReport, docType: "case_report" },
+        { category: "document", files: docPatientInfo, docType: "patient_info" },
+        { category: "document", files: docOthers, docType: "others" },
+      ];
 
-        for (const file of filesToUpload) {
+      for (const group of fileCategories) {
+        for (const file of group.files) {
           const formData = new FormData();
-          formData.append("file", file as File);
+          formData.append("file", file);
+          formData.append("category", group.category);
+          if (group.category === "folder" && file.webkitRelativePath) {
+            formData.append("folderPath", file.webkitRelativePath);
+          }
+          if (group.category === "document" && group.docType) {
+            formData.append("docType", group.docType);
+          }
 
           const uploadResponse = await fetch(`/api/studies/${studyId}/files`, {
             method: "POST",
@@ -374,13 +383,13 @@ export default function ClientDashboard() {
           });
 
           if (!uploadResponse.ok) {
-            throw new Error("Failed to upload file");
+            throw new Error(`Failed to upload ${file.name}`);
           }
         }
-
-        await fetchStudies();
-        alert("Study created successfully");
       }
+
+      await fetchStudies();
+      alert(editingStudyId ? "Case updated successfully" : "Case created successfully");
 
       // RESET FORM
       setPatientId("");
@@ -391,22 +400,23 @@ export default function ClientDashboard() {
       setSelectedModalities([]);
       setImagingLink("");
       setReportUrl("");
-      setMriFile(null);
-      setPetFile(null);
-      setDwiFile(null);
-      setOtherModalityFile(null);
-      setDocMedicalHistory(null);
-      setDocConsent(null);
-      setDocCaseReport(null);
-      setDocPatientInfo(null);
-      setDocOthers(null);
+      setmriFile([]);
+      setPetFile([]);
+      setDwiFile([]);
+      setOtherModalityFiles([]);
+      setFolderFiles([]);
+      setDocMedicalHistory([]);
+      setDocConsent([]);
+      setDocCaseReport([]);
+      setDocPatientInfo([]);
+      setDocOthers([]);
       setExistingFiles([]);
       setEditingStudyId(null);
       setShowModal(false);
 
     } catch (error) {
       console.error(error);
-      alert("Something went wrong");
+      alert("Something went wrong during submission");
     } finally {
       setLoading(false);
     }
@@ -637,13 +647,15 @@ export default function ClientDashboard() {
         reportUrl={reportUrl}
         setReportUrl={setReportUrl}
         mriFile={mriFile}
-        setMriFile={setMriFile}
+        setmriFile={setmriFile}
         petFile={petFile}
         setPetFile={setPetFile}
         dwiFile={dwiFile}
         setDwiFile={setDwiFile}
-        otherModalityFile={otherModalityFile}
-        setOtherModalityFile={setOtherModalityFile}
+        otherModalityFiles={otherModalityFiles}
+        setOtherModalityFiles={setOtherModalityFiles}
+        folderFiles={folderFiles}
+        setFolderFiles={setFolderFiles}
         docMedicalHistory={docMedicalHistory}
         setDocMedicalHistory={setDocMedicalHistory}
         docConsent={docConsent}

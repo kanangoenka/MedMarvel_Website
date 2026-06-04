@@ -166,7 +166,7 @@ export default function OperatorDashboard() {
     });
 
   // =========================
-  // DOWNLOAD FILES (actual download, not open)
+  // DOWNLOAD FILES (ZIP archive download)
   // =========================
   function downloadFiles(study: any) {
     if (!study.files || study.files.length === 0) {
@@ -174,14 +174,12 @@ export default function OperatorDashboard() {
       return;
     }
 
-    study.files.forEach((file: any) => {
-      const link = document.createElement("a");
-      link.href = file.fileUrl;
-      link.download = file.fileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    });
+    const link = document.createElement("a");
+    link.href = `/api/studies/${study.id}/download`;
+    link.download = `study_${study.id}.zip`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 
   // =========================

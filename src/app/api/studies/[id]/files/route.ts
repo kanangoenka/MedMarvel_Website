@@ -21,88 +21,77 @@ export async function POST(
       );
     }
 
-    const params =
-      await context.params;
+    const params = await context.params;
+    const studyId = params.id;
 
-    const studyId =
-      params.id;
+    const formData = await request.formData();
+    const file = formData.get("file") as File;
+    const category = (formData.get("category") as string || "unknown").toLowerCase();
+    const folderPath = formData.get("folderPath") as string | null;
 
-    const formData =
-      await request.formData();
-
-    const file =
-      formData.get("file") as File;
+    const docType = formData.get("docType") as string | null;
 
     if (!file) {
       return NextResponse.json(
-        {
-          error: "No file uploaded",
-        },
-        {
-          status: 400,
-        }
+        { error: "No file uploaded" },
+        { status: 400 }
       );
     }
 
-    const bytes =
-      await file.arrayBuffer();
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
 
-    const buffer =
-      Buffer.from(bytes);
+    // Path sanitization helper
+    const sanitizePath = (p: string) => {
+      return p
+        .split(/[/\\]+/)
+        .map(seg => seg.replace(/[^a-zA-Z0-9.\-_ ]/g, "_"))
+        .filter(seg => seg !== "" && seg !== "..")
+        .join("/");
+    };
 
-    const extension =
-      file.name
-        .split(".")
-        .pop();
+    let relativeSavePath = "";
+    let fileType = category;
 
-    const savedFileName =
-      `${uuidv4()}.${extension}`;
-
-   const uploadDir =
-  path.join(
-    process.cwd(),
-    "public",
-    "uploads",
-    studyId
-  );
-
-    if (
-      !fs.existsSync(uploadDir)
-    ) {
-      fs.mkdirSync(
-        uploadDir,
-        {
-          recursive: true,
-        }
-      );
+    if (category === "folder" && folderPath) {
+      const sanitizedFolderFile = sanitizePath(folderPath);
+      relativeSavePath = `folders/${sanitizedFolderFile}`;
+      fileType = "folder";
+    } else if (category === "document" && docType) {
+      const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.\-_ ]/g, "_");
+      const sanitizedDocType = sanitizePath(docType);
+      relativeSavePath = `docs/${sanitizedDocType}/${sanitizedFileName}`;
+      fileType = `document (${docType})`;
+    } else {
+      const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.\-_ ]/g, "_");
+      relativeSavePath = `${category}/${sanitizedFileName}`;
     }
 
-    const filePath =
-      path.join(
-        uploadDir,
-        savedFileName
-      );
-
-    fs.writeFileSync(
-      filePath,
-      buffer
+    const uploadDir = path.join(
+      process.cwd(),
+      "public",
+      "uploads",
+      studyId
     );
 
-    const fileUrl =
-      `/uploads/${studyId}/${savedFileName}`;
+    const fullFilePath = path.join(uploadDir, relativeSavePath);
+    const targetDir = path.dirname(fullFilePath);
+
+    if (!fs.existsSync(targetDir)) {
+      fs.mkdirSync(targetDir, { recursive: true });
+    }
+
+    fs.writeFileSync(fullFilePath, buffer);
+
+    const fileUrl = `/uploads/${studyId}/${relativeSavePath}`;
 
     await prisma.studyFile.create({
       data: {
         studyId,
-
-        fileName:
-          file.name,
-
+        fileName: file.name,
         fileUrl,
-
-        fileType:
-          file.type ||
-          "unknown",
+        fileType: fileType,
+        folderPath: relativeSavePath,
       },
     });
 
@@ -112,17 +101,10 @@ export async function POST(
     });
 
   } catch (error) {
-
     console.error(error);
-
     return NextResponse.json(
-      {
-        error:
-          "Failed to upload file",
-      },
-      {
-        status: 500,
-      }
+      { error: "Failed to upload file" },
+      { status: 500 }
     );
   }
 }
