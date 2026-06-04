@@ -1,11 +1,6 @@
 "use client";
-import Image from "next/image";
 import { useEffect, useState } from "react";
-
-import {
-  Bell,
-  LogOut,
-} from "lucide-react";
+import { Bell } from "lucide-react";
 
 export default function Navbar() {
   const [user, setUser] = useState<any>(null);
@@ -26,70 +21,79 @@ export default function Navbar() {
   }, []);
 
   const getInitial = () => {
-    if (user?.name) {
-      return user.name[0].toUpperCase();
-    }
+    if (user?.role === "ADMIN") return "A";
+    if (user?.name) return user.name[0].toUpperCase();
     return "U";
+  };
+
+  const getDisplayName = () => {
+    if (!user) return "Loading...";
+    if (user.role === "ADMIN") return "Admin";
+    return user.name;
   };
 
   const getSubLabel = () => {
     if (!user) return "";
-    if (user.role === "ADMIN") return "Admin Mode";
+    if (user.role === "ADMIN") return "System Administrator";
+    if (user.role === "OPERATOR") {
+      if (user.institution?.name) return `Operator · ${user.institution.name}`;
+      return "Operator";
+    }
     if (user.site?.name && user.institution?.name) {
-      return `${user.site.name} (${user.institution.name})`;
+      return `${user.site.name} · ${user.institution.name}`;
     }
-    if (user.institution?.name) {
-      return user.institution.name;
-    }
-    return user.role === "OPERATOR" ? "Operator" : "Client User";
+    if (user.institution?.name) return user.institution.name;
+    return "Doctor";
+  };
+
+  const getAvatarColor = () => {
+    if (user?.role === "ADMIN") return "bg-violet-600";
+    if (user?.role === "OPERATOR") return "bg-teal-600";
+    return "bg-blue-600";
   };
 
   return (
     <div className="h-16 bg-[#071739] border-b border-white/10 flex items-center justify-between px-6">
-      {/* LEFT */}
-      <div className="flex items-center gap-4">
-        <Image
-          src="/logo/logo.png"
-          alt="MedVirtuoso Logo"
-          width={52}
-          height={52}
-          
-          priority
-          className="rounded-md"
-        />
 
-        <div>
-          <h1 className="text-lg font-semibold tracking-wide text-white">
-            MEDVIRTUOSO
-          </h1>
-
-          <p className="text-[11px] text-blue-100">
-            MedMarvel Software Solutions
-          </p>
-        </div>
+      {/* LEFT — Text branding only, no logo */}
+      <div className="flex flex-col justify-center">
+        <h1 className="text-[15px] font-bold tracking-wide text-white leading-tight">
+          MedVirtuoso
+        </h1>
+        <p className="text-[10px] text-blue-300 font-medium tracking-wider leading-tight">
+          Advanced Medical Imaging Platform
+        </p>
       </div>
 
       {/* RIGHT */}
       <div className="flex items-center gap-5">
-        {/* NOTIFICATIONS */}
-        <button className="relative text-white/80 hover:text-white transition">
-          <Bell size={19} />
 
-          <span className="absolute -top-1 -right-1 h-2 w-2 rounded-xl bg-red-500"></span>
+        {/* NOTIFICATIONS */}
+        <button className="relative text-white/70 hover:text-white transition">
+          <Bell size={18} />
+          <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-red-500" />
         </button>
 
         {/* USER */}
         <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-xl bg-blue-600 flex items-center justify-center text-white text-sm font-semibold">
+          <div
+            className={`h-9 w-9 rounded-xl flex items-center justify-center text-white text-sm font-bold ${getAvatarColor()}`}
+          >
             {getInitial()}
           </div>
 
           <div className="leading-tight">
-            <p className="text-sm font-medium text-white">
-              {user?.name || "Loading..."}
-            </p>
-
-            <p className="text-xs text-blue-100">
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-semibold text-white">
+                {getDisplayName()}
+              </p>
+              {user?.role === "ADMIN" && (
+                <span className="text-[10px] font-bold bg-violet-500/20 text-violet-300 border border-violet-500/30 px-2 py-0.5 rounded-full">
+                  Admin
+                </span>
+              )}
+            </div>
+            <p className="text-[11px] text-blue-200">
               {getSubLabel()}
             </p>
           </div>
@@ -98,17 +102,10 @@ export default function Navbar() {
         {/* LOGOUT */}
         <button
           onClick={async () => {
-            await fetch(
-              "/api/auth/logout",
-              {
-                method: "POST",
-              }
-            );
-
-            window.location.href =
-              "/login";
+            await fetch("/api/auth/logout", { method: "POST" });
+            window.location.href = "/login";
           }}
-          className="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-xl transition"
+          className="bg-red-500/90 hover:bg-red-600 text-white text-sm px-4 py-1.5 rounded-lg transition font-medium"
         >
           Logout
         </button>

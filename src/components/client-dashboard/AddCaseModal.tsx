@@ -11,7 +11,16 @@ import {
     Lock,
     FileText,
     Paperclip,
+    Stethoscope,
+    CheckCircle2,
 } from "lucide-react";
+
+interface ExistingFile {
+    id: string;
+    fileName: string;
+    fileUrl: string;
+    fileType: string;
+}
 
 interface AddCaseModalProps {
     isOpen: boolean;
@@ -55,6 +64,12 @@ interface AddCaseModalProps {
 
     setModality: (val: string) => void;
     loading: boolean;
+
+    // Assigned doctor (the logged-in doctor's name — read-only)
+    assignedDoctorName?: string;
+
+    // Existing uploaded files when editing
+    existingFiles?: ExistingFile[];
 }
 
 export default function AddCaseModal({
@@ -94,6 +109,8 @@ export default function AddCaseModal({
     setDocOthers,
     setModality,
     loading,
+    assignedDoctorName,
+    existingFiles,
 }: AddCaseModalProps) {
     if (!isOpen) return null;
 
@@ -124,6 +141,15 @@ export default function AddCaseModal({
                         <X size={16} />
                     </button>
                 </div>
+
+                {/* ASSIGNED DOCTOR banner (read-only) */}
+                {assignedDoctorName && (
+                    <div className="mx-6 mt-3 flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-xl px-4 py-2.5">
+                        <Stethoscope size={14} className="text-blue-600 shrink-0" />
+                        <span className="text-[11px] font-bold text-blue-500 uppercase tracking-wider">Assigned Doctor:</span>
+                        <span className="text-[12px] font-bold text-blue-800">{assignedDoctorName}</span>
+                    </div>
+                )}
 
                 {/* 2-Column Layout: Left = Patient + Modalities | Right = Report + Documents */}
                 <div className="px-6 py-4 grid grid-cols-2 gap-5 bg-[#fcfcfd]">
@@ -436,6 +462,28 @@ export default function AddCaseModal({
                                     )}
                                 </div>
                             </div>
+
+                            {/* UPLOAD STATUS — show after page refresh (existing files) */}
+                            {existingFiles && existingFiles.length > 0 && (
+                                <div className="mt-2 pt-2 border-t border-slate-100">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
+                                        Previously Uploaded
+                                    </p>
+                                    <div className="space-y-1">
+                                        {existingFiles.map((f) => (
+                                            <div
+                                                key={f.id}
+                                                className="flex items-center gap-2 px-2 py-1 bg-green-50 border border-green-100 rounded-lg"
+                                            >
+                                                <CheckCircle2 size={11} className="text-green-500 shrink-0" />
+                                                <span className="text-[10px] font-semibold text-green-700 truncate">
+                                                    Uploaded ✓ {f.fileName}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -446,7 +494,7 @@ export default function AddCaseModal({
                         <div className="flex items-center justify-between pb-1.5 border-b border-slate-100 mb-4">
                             <div className="flex items-center gap-2">
                                 <FileText size={14} className="text-blue-600 shrink-0" />
-                                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Report & Documents</span>
+                                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Report &amp; Documents</span>
                             </div>
                             <span className="text-[9px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-bold">Metadata</span>
                         </div>
@@ -472,12 +520,15 @@ export default function AddCaseModal({
                             <div className="space-y-2">
 
                                 {/* 1. Medical History */}
-                                <div className={`flex items-center justify-between px-3 py-2 rounded-lg border transition-all ${docMedicalHistory ? "border-green-500/20 bg-green-50/30 text-green-700" : "border-slate-200/80 bg-white hover:bg-slate-50/30"
-                                    }`}>
+                                <div className={`flex items-center justify-between px-3 py-2 rounded-lg border transition-all ${docMedicalHistory ? "border-green-500/20 bg-green-50/30 text-green-700" : "border-slate-200/80 bg-white hover:bg-slate-50/30"}`}>
                                     <div className="flex items-center gap-2 min-w-0 flex-1">
                                         <Paperclip size={12} className={docMedicalHistory ? "text-green-600 shrink-0" : "text-slate-400 shrink-0"} />
                                         <span className="text-[11px] font-semibold text-slate-600 truncate">
-                                            {docMedicalHistory ? (typeof docMedicalHistory === "string" ? docMedicalHistory : docMedicalHistory.name) : "Medical History"}
+                                            {docMedicalHistory
+                                                ? (typeof docMedicalHistory === "string"
+                                                    ? `Uploaded ✓ ${docMedicalHistory}`
+                                                    : `Uploaded ✓ ${docMedicalHistory.name}`)
+                                                : "Medical History"}
                                         </span>
                                     </div>
                                     <div className="shrink-0 ml-2">
@@ -505,12 +556,15 @@ export default function AddCaseModal({
                                 </div>
 
                                 {/* 2. Consent Form */}
-                                <div className={`flex items-center justify-between px-3 py-2 rounded-lg border transition-all ${docConsent ? "border-green-500/20 bg-green-50/30 text-green-700" : "border-slate-200/80 bg-white hover:bg-slate-50/30"
-                                    }`}>
+                                <div className={`flex items-center justify-between px-3 py-2 rounded-lg border transition-all ${docConsent ? "border-green-500/20 bg-green-50/30 text-green-700" : "border-slate-200/80 bg-white hover:bg-slate-50/30"}`}>
                                     <div className="flex items-center gap-2 min-w-0 flex-1">
                                         <Paperclip size={12} className={docConsent ? "text-green-600 shrink-0" : "text-slate-400 shrink-0"} />
                                         <span className="text-[11px] font-semibold text-slate-600 truncate">
-                                            {docConsent ? (typeof docConsent === "string" ? docConsent : docConsent.name) : "Consent Form"}
+                                            {docConsent
+                                                ? (typeof docConsent === "string"
+                                                    ? `Uploaded ✓ ${docConsent}`
+                                                    : `Uploaded ✓ ${docConsent.name}`)
+                                                : "Consent Form"}
                                         </span>
                                     </div>
                                     <div className="shrink-0 ml-2">
@@ -538,12 +592,15 @@ export default function AddCaseModal({
                                 </div>
 
                                 {/* 3. Case Report Form */}
-                                <div className={`flex items-center justify-between px-3 py-2 rounded-lg border transition-all ${docCaseReport ? "border-green-500/20 bg-green-50/30 text-green-700" : "border-slate-200/80 bg-white hover:bg-slate-50/30"
-                                    }`}>
+                                <div className={`flex items-center justify-between px-3 py-2 rounded-lg border transition-all ${docCaseReport ? "border-green-500/20 bg-green-50/30 text-green-700" : "border-slate-200/80 bg-white hover:bg-slate-50/30"}`}>
                                     <div className="flex items-center gap-2 min-w-0 flex-1">
                                         <Paperclip size={12} className={docCaseReport ? "text-green-600 shrink-0" : "text-slate-400 shrink-0"} />
                                         <span className="text-[11px] font-semibold text-slate-600 truncate">
-                                            {docCaseReport ? (typeof docCaseReport === "string" ? docCaseReport : docCaseReport.name) : "Case Report Form"}
+                                            {docCaseReport
+                                                ? (typeof docCaseReport === "string"
+                                                    ? `Uploaded ✓ ${docCaseReport}`
+                                                    : `Uploaded ✓ ${docCaseReport.name}`)
+                                                : "Case Report Form"}
                                         </span>
                                     </div>
                                     <div className="shrink-0 ml-2">
@@ -571,12 +628,15 @@ export default function AddCaseModal({
                                 </div>
 
                                 {/* 4. Patient Info Sheet */}
-                                <div className={`flex items-center justify-between px-3 py-2 rounded-lg border transition-all ${docPatientInfo ? "border-green-500/20 bg-green-50/30 text-green-700" : "border-slate-200/80 bg-white hover:bg-slate-50/30"
-                                    }`}>
+                                <div className={`flex items-center justify-between px-3 py-2 rounded-lg border transition-all ${docPatientInfo ? "border-green-500/20 bg-green-50/30 text-green-700" : "border-slate-200/80 bg-white hover:bg-slate-50/30"}`}>
                                     <div className="flex items-center gap-2 min-w-0 flex-1">
                                         <Paperclip size={12} className={docPatientInfo ? "text-green-600 shrink-0" : "text-slate-400 shrink-0"} />
                                         <span className="text-[11px] font-semibold text-slate-600 truncate">
-                                            {docPatientInfo ? (typeof docPatientInfo === "string" ? docPatientInfo : docPatientInfo.name) : "Patient Info Sheet"}
+                                            {docPatientInfo
+                                                ? (typeof docPatientInfo === "string"
+                                                    ? `Uploaded ✓ ${docPatientInfo}`
+                                                    : `Uploaded ✓ ${docPatientInfo.name}`)
+                                                : "Patient Info Sheet"}
                                         </span>
                                     </div>
                                     <div className="shrink-0 ml-2">
@@ -604,12 +664,15 @@ export default function AddCaseModal({
                                 </div>
 
                                 {/* 5. Others */}
-                                <div className={`flex items-center justify-between px-3 py-2 rounded-lg border transition-all ${docOthers ? "border-green-500/20 bg-green-50/30 text-green-700" : "border-slate-200/80 bg-white hover:bg-slate-50/30"
-                                    }`}>
+                                <div className={`flex items-center justify-between px-3 py-2 rounded-lg border transition-all ${docOthers ? "border-green-500/20 bg-green-50/30 text-green-700" : "border-slate-200/80 bg-white hover:bg-slate-50/30"}`}>
                                     <div className="flex items-center gap-2 min-w-0 flex-1">
                                         <Paperclip size={12} className={docOthers ? "text-green-600 shrink-0" : "text-slate-400 shrink-0"} />
                                         <span className="text-[11px] font-semibold text-slate-600 truncate">
-                                            {docOthers ? (typeof docOthers === "string" ? docOthers : docOthers.name) : "Others"}
+                                            {docOthers
+                                                ? (typeof docOthers === "string"
+                                                    ? `Uploaded ✓ ${docOthers}`
+                                                    : `Uploaded ✓ ${docOthers.name}`)
+                                                : "Others"}
                                         </span>
                                     </div>
                                     <div className="shrink-0 ml-2">

@@ -99,6 +99,13 @@ export async function POST(
           patient: true,
           report: true,
           files: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
         },
       });
 
@@ -140,16 +147,26 @@ export async function GET() {
       );
     }
 
+    // Include the assigned doctor (user) on every study
+    const studyInclude = {
+      patient: true,
+      report: true,
+      files: true,
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    };
+
     let studies: any[] = [];
 
     if (user.role === "ADMIN") {
       studies =
         await prisma.study.findMany({
-          include: {
-            patient: true,
-            report: true,
-            files: true,
-          },
+          include: studyInclude,
           orderBy: {
             createdAt: "desc",
           },
@@ -163,11 +180,7 @@ export async function GET() {
             userId: user.id,
           },
 
-          include: {
-            patient: true,
-            report: true,
-            files: true,
-          },
+          include: studyInclude,
 
           orderBy: {
             createdAt: "desc",
@@ -189,11 +202,7 @@ export async function GET() {
             },
           },
 
-          include: {
-            patient: true,
-            report: true,
-            files: true,
-          },
+          include: studyInclude,
 
           orderBy: {
             createdAt: "desc",
