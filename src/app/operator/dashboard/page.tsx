@@ -403,9 +403,6 @@ export default function OperatorDashboard() {
                   Imaging Link
                 </th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
-                  Metadata
-                </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
                   Status
                 </th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
@@ -506,20 +503,7 @@ export default function OperatorDashboard() {
                       )}
                     </td>
 
-                    {/* METADATA */}
-                    <td className="px-6 py-4">
-                      {missingMetadata ? (
-                        <div className="inline-flex items-center gap-2 bg-red-100 text-red-700 px-3 py-1 rounded-xl text-xs font-medium">
-                          <AlertTriangle size={14} />
-                          Incomplete
-                        </div>
-                      ) : (
-                        <div className="inline-flex items-center gap-2 bg-green-100 text-green-700 px-3 py-1 rounded-xl text-xs font-medium">
-                          <CheckCircle2 size={14} />
-                          Complete
-                        </div>
-                      )}
-                    </td>
+                   
 
                     {/* STATUS */}
                     <td className="px-6 py-4">

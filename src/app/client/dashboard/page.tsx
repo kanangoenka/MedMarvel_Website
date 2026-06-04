@@ -516,7 +516,7 @@ export default function ClientDashboard() {
                     {study.modality || "-"}
                   </td>
 
-                  {/* UPLOADED FILES — "Uploaded ✓ filename" */}
+                  {/* UPLOADED FILES — " filename" */}
                   <td className="px-6 py-4">
                     {study.files && study.files.length > 0 ? (
                       <div className="space-y-1">
@@ -527,7 +527,7 @@ export default function ClientDashboard() {
                           >
                             <CheckCircle2 size={11} className="text-green-500 shrink-0" />
                             <span className="truncate max-w-[140px]">
-                              Uploaded ✓ {f.fileName}
+                              {f.fileName}
                             </span>
                           </div>
                         ))}
