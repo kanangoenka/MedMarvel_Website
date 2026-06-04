@@ -16,19 +16,7 @@ import {
   Trash2,
   MessageSquare,
   Download,
-  FileText,
-  UploadCloud,
   CheckCircle2,
-  Lock,
-  User,
-  Hash,
-  Calendar,
-  Activity,
-  Layers,
-  Link,
-  Check,
-  X,
-  Paperclip,
 } from "lucide-react";
 
 export default function ClientDashboard() {
@@ -36,8 +24,11 @@ export default function ClientDashboard() {
   const router = useRouter();
 
   const [showModal, setShowModal] = useState(false);
-
   const [editingStudyId, setEditingStudyId] = useState<string | null>(null);
+  const [existingFiles, setExistingFiles] = useState<any[]>([]);
+
+  // Current doctor info
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   // COMMENTS STATES
   const [showCommentsModal, setShowCommentsModal] = useState(false);
@@ -58,17 +49,18 @@ export default function ClientDashboard() {
   const [reportUrl, setReportUrl] = useState("");
 
   // MODALITY UPLOAD STATES
-  const [mriFile, setMriFile] = useState<File | string | null>(null);
-  const [petFile, setPetFile] = useState<File | string | null>(null);
-  const [dwiFile, setDwiFile] = useState<File | string | null>(null);
-  const [otherModalityFile, setOtherModalityFile] = useState<File | string | null>(null);
+  const [mriFile, setmriFile] = useState<File[]>([]);
+  const [petFile, setPetFile] = useState<File[]>([]);
+  const [dwiFile, setDwiFile] = useState<File[]>([]);
+  const [otherModalityFiles, setOtherModalityFiles] = useState<File[]>([]);
+  const [folderFiles, setFolderFiles] = useState<File[]>([]);
 
   // DOCUMENT UPLOAD STATES
-  const [docMedicalHistory, setDocMedicalHistory] = useState<File | string | null>(null);
-  const [docConsent, setDocConsent] = useState<File | string | null>(null);
-  const [docCaseReport, setDocCaseReport] = useState<File | string | null>(null);
-  const [docPatientInfo, setDocPatientInfo] = useState<File | string | null>(null);
-  const [docOthers, setDocOthers] = useState<File | string | null>(null);
+  const [docMedicalHistory, setDocMedicalHistory] = useState<File[]>([]);
+  const [docConsent, setDocConsent] = useState<File[]>([]);
+  const [docCaseReport, setDocCaseReport] = useState<File[]>([]);
+  const [docPatientInfo, setDocPatientInfo] = useState<File[]>([]);
+  const [docOthers, setDocOthers] = useState<File[]>([]);
 
   const [loading, setLoading] = useState(false);
 
@@ -78,11 +70,34 @@ export default function ClientDashboard() {
   const [statusFilter, setStatusFilter] = useState("ALL");
 
   // =========================
+  // FETCH CURRENT USER
+  // =========================
+  useEffect(() => {
+    async function fetchCurrentUser() {
+      try {
+        const res = await fetch("/api/auth/me");
+        if (res.ok) {
+          const data = await res.json();
+          setCurrentUser(data);
+        }
+      } catch (error) {
+        console.error("Error fetching current user:", error);
+      }
+    }
+    fetchCurrentUser();
+  }, []);
+
+  // =========================
   // FETCH STUDIES
   // =========================
   async function fetchStudies() {
     try {
       const response = await fetch("/api/studies");
+
+      if (response.status === 401) {
+        router.push("/login");
+        return;
+      }
 
       if (!response.ok) {
         throw new Error("API failed");
@@ -90,12 +105,11 @@ export default function ClientDashboard() {
 
       const data = await response.json();
 
-
-if (Array.isArray(data)) {
-  setStudies(data);
-} else {
-  throw new Error("Invalid API response");
-}
+      if (Array.isArray(data)) {
+        setStudies(data);
+      } else {
+        throw new Error("Invalid API response");
+      }
     } catch (error) {
       console.error("API failed or unconfigured, seeding mock studies:", error);
       setStudies([
@@ -112,6 +126,7 @@ if (Array.isArray(data)) {
           status: "READY",
           createdAt: new Date(Date.now() - 3600000 * 24).toISOString(),
           imagingLink: "https://pacs.medvirtuoso.com/study/pt-8291",
+          files: [],
           report: {
             id: "report_mock_1",
             reportUrl: "https://pdfobject.com/pdf/sample.pdf",
@@ -130,6 +145,7 @@ if (Array.isArray(data)) {
           status: "PROCESSING",
           createdAt: new Date(Date.now() - 3600000 * 4).toISOString(),
           imagingLink: "https://pacs.medvirtuoso.com/study/pt-0912",
+          files: [],
           report: null,
         },
         {
@@ -145,6 +161,7 @@ if (Array.isArray(data)) {
           status: "UPLOADED",
           createdAt: new Date(Date.now() - 3600000 * 1).toISOString(),
           imagingLink: "",
+          files: [],
           report: null,
         },
       ]);
@@ -195,21 +212,14 @@ if (Array.isArray(data)) {
   // =========================
   async function handleSendMessage() {
     try {
-      if (!message || !selectedStudyId) {
-        return;
-      }
+      if (!message || !selectedStudyId) return;
 
       setCommentsLoading(true);
 
       const response = await fetch(`/api/studies/${selectedStudyId}/comments`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          message,
-          role: "CLIENT",
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message, role: "CLIENT" }),
       });
 
       const data = await response.json();
@@ -247,13 +257,20 @@ if (Array.isArray(data)) {
     setGender(study.patient?.gender || "");
     setReportUrl(study.report?.reportUrl || "");
 
-    if (study.modality) {
-      if (study.modality === "OTHER") {
-        setOtherModalityFile("scan_other_existing.dcm");
-      } else {
-        setMriFile("scan_mri_existing.dcm");
-      }
-    }
+    // Populate existing files for upload status display
+    setExistingFiles(study.files || []);
+
+    // Reset file states (clear any previous selections)
+    setmriFile([]);
+    setPetFile([]);
+    setDwiFile([]);
+    setOtherModalityFiles([]);
+    setFolderFiles([]);
+    setDocMedicalHistory([]);
+    setDocConsent([]);
+    setDocCaseReport([]);
+    setDocPatientInfo([]);
+    setDocOthers([]);
 
     setShowModal(true);
   }
@@ -261,54 +278,24 @@ if (Array.isArray(data)) {
   // =========================
   // DELETE FUNCTION
   // =========================
+  async function handleDelete(id: string) {
+    try {
+      const confirmed = window.confirm("Delete this study?");
+      if (!confirmed) return;
 
-  async function handleDelete(
-  id: string
-) {
-  try {
+      const response = await fetch(`/api/studies/${id}`, { method: "DELETE" });
+      const data = await response.json();
 
-    const confirmed =
-      window.confirm(
-        "Delete this study?"
-      );
+      if (!response.ok) throw new Error(data.error);
 
-    if (!confirmed) {
-      return;
+      await fetchStudies();
+      alert("Study deleted successfully");
+
+    } catch (error) {
+      console.error(error);
+      alert("Failed to delete study");
     }
-
-    const response =
-      await fetch(
-        `/api/studies/${id}`,
-        {
-          method: "DELETE",
-        }
-      );
-
-    const data =
-      await response.json();
-
-    if (!response.ok) {
-      throw new Error(
-        data.error
-      );
-    }
-
-    await fetchStudies();
-
-    alert(
-      "Study deleted successfully"
-    );
-
-  } catch (error) {
-
-    console.error(error);
-
-    alert(
-      "Failed to delete study"
-    );
   }
-}
-  
 
   // =========================
   // SUBMIT FUNCTION
@@ -326,109 +313,84 @@ if (Array.isArray(data)) {
 
     try {
       setLoading(true);
-
       await new Promise((resolve) => setTimeout(resolve, 800));
 
-         if (editingStudyId) {
+      let studyId = editingStudyId;
 
-  const response = await fetch(
-    `/api/studies/${editingStudyId}`,
-    {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        patientId,
-        patientName,
-        studyDescription,
-        modality: selectedModalities.join(", "),
-        imagingLink,
-      }),
-    }
-  );
+      if (editingStudyId) {
+        const response = await fetch(`/api/studies/${editingStudyId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            patientId,
+            patientName,
+            studyDescription,
+            modality: selectedModalities.join(", "),
+            imagingLink,
+          }),
+        });
 
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.error);
-  }
-
-  await fetchStudies();
-
-  alert("Study updated successfully");
-}
-         
-else {
-
-  const response = await fetch("/api/studies", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      patientId,
-      patientName,
-      studyDescription,
-      modality: selectedModalities.join(", "),
-      imagingLink,
-    }),
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.error);
-  }
-
-  const studyId = data.study.id;
-
-  const filesToUpload = [
-
-    mriFile,
-    petFile,
-    dwiFile,
-    otherModalityFile,
-
-    docMedicalHistory,
-    docConsent,
-    docCaseReport,
-    docPatientInfo,
-    docOthers,
-
-  ].filter(Boolean);
-
-  for (const file of filesToUpload) {
-
-    const formData =
-      new FormData();
-
-    formData.append(
-      "file",
-      file as File
-    );
-
-    const uploadResponse =
-      await fetch(
-        `/api/studies/${studyId}/files`,
-        {
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error);
+      } else {
+        const response = await fetch("/api/studies", {
           method: "POST",
-          body: formData,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            patientId,
+            patientName,
+            studyDescription,
+            modality: selectedModalities.join(", "),
+            imagingLink,
+          }),
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error);
+
+        studyId = data.study.id;
+      }
+
+      // Group all selected files by category for batch upload
+      const fileCategories = [
+        { category: "mri", files: mriFile },
+        { category: "pet", files: petFile },
+        { category: "dwi", files: dwiFile },
+        { category: "other", files: otherModalityFiles },
+        { category: "folder", files: folderFiles },
+        { category: "document", files: docMedicalHistory, docType: "medical_history" },
+        { category: "document", files: docConsent, docType: "consent" },
+        { category: "document", files: docCaseReport, docType: "case_report" },
+        { category: "document", files: docPatientInfo, docType: "patient_info" },
+        { category: "document", files: docOthers, docType: "others" },
+      ];
+
+      for (const group of fileCategories) {
+        for (const file of group.files) {
+          const formData = new FormData();
+          formData.append("file", file);
+          formData.append("category", group.category);
+          if (group.category === "folder" && file.webkitRelativePath) {
+            formData.append("folderPath", file.webkitRelativePath);
+          }
+          if (group.category === "document" && group.docType) {
+            formData.append("docType", group.docType);
+          }
+
+          const uploadResponse = await fetch(`/api/studies/${studyId}/files`, {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!uploadResponse.ok) {
+            throw new Error(`Failed to upload ${file.name}`);
+          }
         }
-      );
+      }
 
-    if (!uploadResponse.ok) {
-      throw new Error(
-        "Failed to upload file"
-      );
-    }
-  }
+      await fetchStudies();
+      alert(editingStudyId ? "Case updated successfully" : "Case created successfully");
 
-  await fetchStudies();
-
-  alert("Study created successfully");
-}
-   
       // RESET FORM
       setPatientId("");
       setPatientName("");
@@ -438,20 +400,23 @@ else {
       setSelectedModalities([]);
       setImagingLink("");
       setReportUrl("");
-      setMriFile(null);
-      setPetFile(null);
-      setDwiFile(null);
-      setOtherModalityFile(null);
-      setDocMedicalHistory(null);
-      setDocConsent(null);
-      setDocCaseReport(null);
-      setDocPatientInfo(null);
-      setDocOthers(null);
+      setmriFile([]);
+      setPetFile([]);
+      setDwiFile([]);
+      setOtherModalityFiles([]);
+      setFolderFiles([]);
+      setDocMedicalHistory([]);
+      setDocConsent([]);
+      setDocCaseReport([]);
+      setDocPatientInfo([]);
+      setDocOthers([]);
+      setExistingFiles([]);
       setEditingStudyId(null);
       setShowModal(false);
+
     } catch (error) {
       console.error(error);
-      alert("Something went wrong");
+      alert("Something went wrong during submission");
     } finally {
       setLoading(false);
     }
@@ -532,8 +497,9 @@ else {
                 <th className="px-6 py-4 text-sm font-semibold text-gray-600">Patient Name</th>
                 <th className="px-6 py-4 text-sm font-semibold text-gray-600">Study Description</th>
                 <th className="px-6 py-4 text-sm font-semibold text-gray-600">Modality</th>
+                <th className="px-6 py-4 text-sm font-semibold text-gray-600">Uploaded Files</th>
                 <th className="px-6 py-4 text-sm font-semibold text-gray-600">Status</th>
-                <th className="px-6 py-4 text-sm font-semibold text-gray-600">Date & Time</th>
+                <th className="px-6 py-4 text-sm font-semibold text-gray-600">Date &amp; Time</th>
                 <th className="px-6 py-4 text-sm font-semibold text-gray-600">Actions</th>
               </tr>
             </thead>
@@ -560,6 +526,27 @@ else {
                     {study.modality || "-"}
                   </td>
 
+                  {/* UPLOADED FILES — " filename" */}
+                  <td className="px-6 py-4">
+                    {study.files && study.files.length > 0 ? (
+                      <div className="space-y-1">
+                        {study.files.map((f: any) => (
+                          <div
+                            key={f.id}
+                            className="flex items-center gap-1.5 text-[11px] text-green-700 font-medium"
+                          >
+                            <CheckCircle2 size={11} className="text-green-500 shrink-0" />
+                            <span className="truncate max-w-[140px]">
+                              {f.fileName}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="text-gray-400 text-xs">No files</span>
+                    )}
+                  </td>
+
                   <td className="px-6 py-4">
                     <span
                       className={`px-3 py-1 rounded-xl text-xs font-semibold ${
@@ -581,15 +568,17 @@ else {
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
                       <button
-  onClick={() => router.push(`/viewer/${study.id}`)}
-  className="p-2 rounded-lg hover:bg-blue-50 transition"
->
-  <Eye size={17} className="text-blue-600" />
-</button>
+                        onClick={() => router.push(`/viewer/${study.id}`)}
+                        className="p-2 rounded-lg hover:bg-blue-50 transition"
+                        title="View study"
+                      >
+                        <Eye size={17} className="text-blue-600" />
+                      </button>
 
                       <button
                         onClick={() => handleEdit(study)}
                         className="p-2 rounded-lg hover:bg-yellow-50 transition"
+                        title="Edit study"
                       >
                         <Pencil size={17} className="text-yellow-600" />
                       </button>
@@ -597,6 +586,7 @@ else {
                       <button
                         onClick={() => openComments(study.id)}
                         className="p-2 rounded-lg hover:bg-purple-50 transition"
+                        title="Comments"
                       >
                         <MessageSquare size={17} className="text-purple-600" />
                       </button>
@@ -608,6 +598,7 @@ else {
                             window.open(study.report.reportUrl, "_blank");
                           }
                         }}
+                        title={study.report ? "Download report" : "No report available"}
                         className={`p-2 rounded-lg transition ${
                           study.report
                             ? "hover:bg-green-50"
@@ -620,6 +611,7 @@ else {
                       <button
                         onClick={() => handleDelete(study.id)}
                         className="p-2 rounded-lg hover:bg-red-50 transition"
+                        title="Delete study"
                       >
                         <Trash2 size={17} className="text-red-600" />
                       </button>
@@ -638,6 +630,7 @@ else {
         onClose={() => {
           setShowModal(false);
           setEditingStudyId(null);
+          setExistingFiles([]);
         }}
         editingStudyId={editingStudyId}
         onSubmit={handleSubmit}
@@ -654,13 +647,15 @@ else {
         reportUrl={reportUrl}
         setReportUrl={setReportUrl}
         mriFile={mriFile}
-        setMriFile={setMriFile}
+        setmriFile={setmriFile}
         petFile={petFile}
         setPetFile={setPetFile}
         dwiFile={dwiFile}
         setDwiFile={setDwiFile}
-        otherModalityFile={otherModalityFile}
-        setOtherModalityFile={setOtherModalityFile}
+        otherModalityFiles={otherModalityFiles}
+        setOtherModalityFiles={setOtherModalityFiles}
+        folderFiles={folderFiles}
+        setFolderFiles={setFolderFiles}
         docMedicalHistory={docMedicalHistory}
         setDocMedicalHistory={setDocMedicalHistory}
         docConsent={docConsent}
@@ -673,6 +668,8 @@ else {
         setDocOthers={setDocOthers}
         setModality={setModality}
         loading={loading}
+        assignedDoctorName={currentUser?.name}
+        existingFiles={existingFiles}
       />
 
       {/* COMMENTS MODAL */}
@@ -745,6 +742,7 @@ else {
                 placeholder="Write a message..."
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
                 className="flex-1 border border-gray-200 rounded-2xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
               />
               <button

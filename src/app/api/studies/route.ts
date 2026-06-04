@@ -22,7 +22,7 @@ export async function POST(
     } = body;
 
     const user =
-      await getCurrentUser();
+      await getCurrentUser() as any;
 
     if (!user) {
       return NextResponse.json(
@@ -43,7 +43,9 @@ export async function POST(
             },
           })
         : null;
-
+      console.log("USER =", user)
+      console.log("SITE ID =", user.siteId)
+      console.log("ROLE =", user.role)
     if (!site) {
       return NextResponse.json(
         {
@@ -97,6 +99,13 @@ export async function POST(
           patient: true,
           report: true,
           files: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
         },
       });
 
@@ -125,7 +134,7 @@ export async function POST(
 export async function GET() {
   try {
     const user =
-      await getCurrentUser();
+      await getCurrentUser() as any;
 
     if (!user) {
       return NextResponse.json(
@@ -138,16 +147,26 @@ export async function GET() {
       );
     }
 
+    // Include the assigned doctor (user) on every study
+    const studyInclude = {
+      patient: true,
+      report: true,
+      files: true,
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    };
+
     let studies: any[] = [];
 
     if (user.role === "ADMIN") {
       studies =
         await prisma.study.findMany({
-          include: {
-            patient: true,
-            report: true,
-            files: true,
-          },
+          include: studyInclude,
           orderBy: {
             createdAt: "desc",
           },
@@ -161,11 +180,7 @@ export async function GET() {
             userId: user.id,
           },
 
-          include: {
-            patient: true,
-            report: true,
-            files: true,
-          },
+          include: studyInclude,
 
           orderBy: {
             createdAt: "desc",
@@ -176,7 +191,7 @@ export async function GET() {
     ) {
       const doctorIds =
         user.assignedDoctors.map(
-          (doctor) => doctor.id
+          (doctor: any) => doctor.id
         );
 
       studies =
@@ -187,11 +202,7 @@ export async function GET() {
             },
           },
 
-          include: {
-            patient: true,
-            report: true,
-            files: true,
-          },
+          include: studyInclude,
 
           orderBy: {
             createdAt: "desc",

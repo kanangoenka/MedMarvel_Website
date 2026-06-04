@@ -26,7 +26,9 @@ export async function getCurrentUser() {
         id: payload.userId as string,
       },
       include: {
+        site: true,
         assignedDoctors: true,
+        institution: true,
       },
     });
 

@@ -8,10 +8,19 @@ import {
     Link as LinkIcon,
     Activity,
     Layers,
-    Lock,
     FileText,
     Paperclip,
+    Stethoscope,
+    CheckCircle2,
+    Folder,
 } from "lucide-react";
+
+interface ExistingFile {
+    id: string;
+    fileName: string;
+    fileUrl: string;
+    fileType: string;
+}
 
 interface AddCaseModalProps {
     isOpen: boolean;
@@ -32,29 +41,37 @@ interface AddCaseModalProps {
     setReportUrl: (val: string) => void;
 
     // Files states
-    mriFile: File | string | null;
-    setMriFile: (val: File | string | null) => void;
-    petFile: File | string | null;
-    setPetFile: (val: File | string | null) => void;
-    dwiFile: File | string | null;
-    setDwiFile: (val: File | string | null) => void;
-    otherModalityFile: File | string | null;
-    setOtherModalityFile: (val: File | string | null) => void;
+    mriFile: File[];
+    setmriFile: (val: File[]) => void;
+    petFile: File[];
+    setPetFile: (val: File[]) => void;
+    dwiFile: File[];
+    setDwiFile: (val: File[]) => void;
+    otherModalityFiles: File[];
+    setOtherModalityFiles: (val: File[]) => void;
+    folderFiles: File[];
+    setFolderFiles: (val: File[]) => void;
 
     // Document states
-    docMedicalHistory: File | string | null;
-    setDocMedicalHistory: (val: File | string | null) => void;
-    docConsent: File | string | null;
-    setDocConsent: (val: File | string | null) => void;
-    docCaseReport: File | string | null;
-    setDocCaseReport: (val: File | string | null) => void;
-    docPatientInfo: File | string | null;
-    setDocPatientInfo: (val: File | string | null) => void;
-    docOthers: File | string | null;
-    setDocOthers: (val: File | string | null) => void;
+    docMedicalHistory: File[];
+    setDocMedicalHistory: (val: File[]) => void;
+    docConsent: File[];
+    setDocConsent: (val: File[]) => void;
+    docCaseReport: File[];
+    setDocCaseReport: (val: File[]) => void;
+    docPatientInfo: File[];
+    setDocPatientInfo: (val: File[]) => void;
+    docOthers: File[];
+    setDocOthers: (val: File[]) => void;
 
     setModality: (val: string) => void;
     loading: boolean;
+
+    // Assigned doctor (the logged-in doctor's name — read-only)
+    assignedDoctorName?: string;
+
+    // Existing uploaded files when editing
+    existingFiles?: ExistingFile[];
 }
 
 export default function AddCaseModal({
@@ -75,13 +92,15 @@ export default function AddCaseModal({
     reportUrl,
     setReportUrl,
     mriFile,
-    setMriFile,
+    setmriFile,
     petFile,
     setPetFile,
     dwiFile,
     setDwiFile,
-    otherModalityFile,
-    setOtherModalityFile,
+    otherModalityFiles,
+    setOtherModalityFiles,
+    folderFiles,
+    setFolderFiles,
     docMedicalHistory,
     setDocMedicalHistory,
     docConsent,
@@ -94,7 +113,16 @@ export default function AddCaseModal({
     setDocOthers,
     setModality,
     loading,
+    assignedDoctorName,
+    existingFiles,
 }: AddCaseModalProps) {
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, category: string, setter: (files: File[]) => void) => {
+        const files = Array.from(e.target.files || []);
+        if (files.length === 0) return;
+        setter(files);
+        setModality(category.toUpperCase());
+    };
+
     if (!isOpen) return null;
 
     return (
@@ -124,6 +152,15 @@ export default function AddCaseModal({
                         <X size={16} />
                     </button>
                 </div>
+
+                {/* ASSIGNED DOCTOR banner (read-only) */}
+                {assignedDoctorName && (
+                    <div className="mx-6 mt-3 flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-xl px-4 py-2.5">
+                        <Stethoscope size={14} className="text-blue-600 shrink-0" />
+                        <span className="text-[11px] font-bold text-blue-500 uppercase tracking-wider">Assigned Doctor:</span>
+                        <span className="text-[12px] font-bold text-blue-800">{assignedDoctorName}</span>
+                    </div>
+                )}
 
                 {/* 2-Column Layout: Left = Patient + Modalities | Right = Report + Documents */}
                 <div className="px-6 py-4 grid grid-cols-2 gap-5 bg-[#fcfcfd]">
@@ -241,30 +278,30 @@ export default function AddCaseModal({
                                 {/* MRI Card */}
                                 <div
                                     onClick={() => {
-                                        if (!mriFile) document.getElementById("mri-card-file")?.click();
+                                        document.getElementById("mri-card-file")?.click();
                                     }}
-                                    className={`group flex items-center justify-between px-3 py-2 rounded-lg border-2 transition-all cursor-pointer ${mriFile
+                                    className={`group flex items-center justify-between px-3 py-2 rounded-lg border-2 transition-all cursor-pointer ${mriFile.length > 0
                                         ? "border-green-500/20 bg-green-50/30"
                                         : "border-dashed border-slate-200 hover:border-blue-500/30 hover:bg-slate-50/50"
                                         }`}
                                 >
                                     <div className="flex items-center gap-2 min-w-0 flex-1">
-                                        <Activity size={14} className={mriFile ? "text-green-600" : "text-slate-400 group-hover:text-blue-600"} />
+                                        <Activity size={14} className={mriFile.length > 0 ? "text-green-600" : "text-slate-400 group-hover:text-blue-600"} />
                                         <div className="min-w-0 flex-1">
                                             <p className="text-[11px] font-bold text-slate-700 leading-tight">MRI Scan</p>
                                             <p className="text-[9px] text-slate-400 truncate leading-none mt-0.5">
-                                                {mriFile ? (typeof mriFile === "string" ? mriFile : mriFile.name) : "Attach *.dcm"}
+                                                {mriFile.length > 0
+                                                ? `✓ ${mriFile.length} file(s) selected`
+                                                : "Attach *.dcm"}
                                             </p>
                                         </div>
                                     </div>
-                                    {mriFile && (
+                                    {mriFile.length > 0 && (
                                         <button
                                             type="button"
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                setMriFile(null);
-                                                setPetFile(null);
-                                                setDwiFile(null);
+                                                setmriFile([]);
                                             }}
                                             className="p-0.5 text-slate-400 hover:text-red-500 rounded"
                                         >
@@ -273,43 +310,40 @@ export default function AddCaseModal({
                                     )}
                                     <input
                                         type="file"
+                                        multiple
                                         id="mri-card-file"
                                         className="hidden"
-                                        onChange={(e) => {
-                                            const file = e.target.files?.[0];
-                                            if (file) {
-                                                setMriFile(file);
-                                                setModality("MRI");
-                                            }
-                                        }}
+                                        onChange={(e) => handleFileChange(e, "mri", setmriFile)}
                                     />
                                 </div>
 
                                 {/* OTHER Card */}
                                 <div
                                     onClick={() => {
-                                        if (!otherModalityFile) document.getElementById("other-card-file")?.click();
+                                        document.getElementById("other-card-file")?.click();
                                     }}
-                                    className={`group flex items-center justify-between px-3 py-2 rounded-lg border-2 transition-all cursor-pointer ${otherModalityFile
+                                    className={`group flex items-center justify-between px-3 py-2 rounded-lg border-2 transition-all cursor-pointer ${otherModalityFiles.length > 0
                                         ? "border-green-500/20 bg-green-50/30"
                                         : "border-dashed border-slate-200 hover:border-blue-500/30 hover:bg-slate-50/50"
                                         }`}
                                 >
                                     <div className="flex items-center gap-2 min-w-0 flex-1">
-                                        <Layers size={14} className={otherModalityFile ? "text-green-600" : "text-slate-400 group-hover:text-blue-600"} />
+                                        <Layers size={14} className={otherModalityFiles.length > 0 ? "text-green-600" : "text-slate-400 group-hover:text-blue-600"} />
                                         <div className="min-w-0 flex-1">
                                             <p className="text-[11px] font-bold text-slate-700 leading-tight">OTHER Scan</p>
                                             <p className="text-[9px] text-slate-400 truncate leading-none mt-0.5">
-                                                {otherModalityFile ? (typeof otherModalityFile === "string" ? otherModalityFile : otherModalityFile.name) : "CT / Ultrasound"}
+                                                {otherModalityFiles.length > 0
+                                                ? `✓ ${otherModalityFiles.length} file(s) selected`
+                                                : "CT / Ultrasound"}
                                             </p>
                                         </div>
                                     </div>
-                                    {otherModalityFile && (
+                                    {otherModalityFiles.length > 0 && (
                                         <button
                                             type="button"
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                setOtherModalityFile(null);
+                                                setOtherModalityFiles([]);
                                             }}
                                             className="p-0.5 text-slate-400 hover:text-red-500 rounded"
                                         >
@@ -318,124 +352,161 @@ export default function AddCaseModal({
                                     )}
                                     <input
                                         type="file"
+                                        multiple
                                         id="other-card-file"
                                         className="hidden"
-                                        onChange={(e) => {
-                                            const file = e.target.files?.[0];
-                                            if (file) {
-                                                setOtherModalityFile(file);
-                                                setModality("OTHER");
-                                            }
-                                        }}
+                                        onChange={(e) => handleFileChange(e, "other", setOtherModalityFiles)}
                                     />
                                 </div>
 
                                 {/* PET Card */}
                                 <div
                                     onClick={() => {
-                                        if (mriFile && !petFile) document.getElementById("pet-card-file")?.click();
+                                        document.getElementById("pet-card-file")?.click();
                                     }}
-                                    className={`group flex items-center justify-between px-3 py-2 rounded-lg border-2 transition-all ${!mriFile
-                                        ? "bg-slate-50 border-slate-100 opacity-50 cursor-not-allowed"
-                                        : petFile
-                                            ? "border-green-500/20 bg-green-50/30 cursor-pointer"
-                                            : "border-dashed border-slate-200 hover:border-blue-500/30 hover:bg-slate-50/50 cursor-pointer"
+                                    className={`group flex items-center justify-between px-3 py-2 rounded-lg border-2 transition-all cursor-pointer ${petFile.length > 0
+                                        ? "border-green-500/20 bg-green-50/30"
+                                        : "border-dashed border-slate-200 hover:border-blue-500/30 hover:bg-slate-50/50"
                                         }`}
                                 >
                                     <div className="flex items-center gap-2 min-w-0 flex-1">
-                                        {!mriFile ? (
-                                            <Lock size={13} className="text-slate-300" />
-                                        ) : (
-                                            <Activity size={14} className={petFile ? "text-green-600" : "text-slate-400 group-hover:text-blue-600"} />
-                                        )}
+                                        <Activity size={14} className={petFile.length > 0 ? "text-green-600" : "text-slate-400 group-hover:text-blue-600"} />
                                         <div className="min-w-0 flex-1">
                                             <p className="text-[11px] font-bold text-slate-700 leading-tight">PET Scan</p>
                                             <p className="text-[9px] text-slate-400 truncate leading-none mt-0.5">
-                                                {petFile ? (typeof petFile === "string" ? petFile : petFile.name) : "Attach *.dcm"}
+                                                {petFile.length > 0
+                                                ? `✓ ${petFile.length} file(s) selected`
+                                                : "Attach *.dcm"}
                                             </p>
                                         </div>
                                     </div>
-                                    {petFile && (
+                                    {petFile.length > 0 && (
                                         <button
                                             type="button"
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                setPetFile(null);
+                                                setPetFile([]);
                                             }}
                                             className="p-0.5 text-slate-400 hover:text-red-500 rounded"
                                         >
                                             <X size={12} />
                                         </button>
                                     )}
-                                    {mriFile && (
-                                        <input
-                                            type="file"
-                                            id="pet-card-file"
-                                            className="hidden"
-                                            onChange={(e) => {
-                                                const file = e.target.files?.[0];
-                                                if (file) {
-                                                    setPetFile(file);
-                                                    setModality("PET");
-                                                }
-                                            }}
-                                        />
-                                    )}
+                                    <input
+                                        type="file"
+                                        multiple
+                                        id="pet-card-file"
+                                        className="hidden"
+                                        onChange={(e) => handleFileChange(e, "pet", setPetFile)}
+                                    />
                                 </div>
 
                                 {/* DWI Card */}
                                 <div
                                     onClick={() => {
-                                        if (mriFile && !dwiFile) document.getElementById("dwi-card-file")?.click();
+                                        document.getElementById("dwi-card-file")?.click();
                                     }}
-                                    className={`group flex items-center justify-between px-3 py-2 rounded-lg border-2 transition-all ${!mriFile
-                                        ? "bg-slate-50 border-slate-100 opacity-50 cursor-not-allowed"
-                                        : dwiFile
-                                            ? "border-green-500/20 bg-green-50/30 cursor-pointer"
-                                            : "border-dashed border-slate-200 hover:border-blue-500/30 hover:bg-slate-50/50 cursor-pointer"
+                                    className={`group flex items-center justify-between px-3 py-2 rounded-lg border-2 transition-all cursor-pointer ${dwiFile.length > 0
+                                        ? "border-green-500/20 bg-green-50/30"
+                                        : "border-dashed border-slate-200 hover:border-blue-500/30 hover:bg-slate-50/50"
                                         }`}
                                 >
                                     <div className="flex items-center gap-2 min-w-0 flex-1">
-                                        {!mriFile ? (
-                                            <Lock size={13} className="text-slate-300" />
-                                        ) : (
-                                            <Activity size={14} className={dwiFile ? "text-green-600" : "text-slate-400 group-hover:text-blue-600"} />
-                                        )}
+                                        <Activity size={14} className={dwiFile.length > 0 ? "text-green-600" : "text-slate-400 group-hover:text-blue-600"} />
                                         <div className="min-w-0 flex-1">
                                             <p className="text-[11px] font-bold text-slate-700 leading-tight">DWI Scan</p>
                                             <p className="text-[9px] text-slate-400 truncate leading-none mt-0.5">
-                                                {dwiFile ? (typeof dwiFile === "string" ? dwiFile : dwiFile.name) : "Attach *.dcm"}
+                                                {dwiFile.length > 0
+                                                ? `✓ ${dwiFile.length} file(s) selected`
+                                                : "Attach *.dcm"}
                                             </p>
                                         </div>
                                     </div>
-                                    {dwiFile && (
+                                    {dwiFile.length > 0 && (
                                         <button
                                             type="button"
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                setDwiFile(null);
+                                                setDwiFile([]);
                                             }}
                                             className="p-0.5 text-slate-400 hover:text-red-500 rounded"
                                         >
                                             <X size={12} />
                                         </button>
                                     )}
-                                    {mriFile && (
-                                        <input
-                                            type="file"
-                                            id="dwi-card-file"
-                                            className="hidden"
-                                            onChange={(e) => {
-                                                const file = e.target.files?.[0];
-                                                if (file) {
-                                                    setDwiFile(file);
-                                                    setModality("DWI");
-                                                }
-                                            }}
-                                        />
-                                    )}
+                                    <input
+                                        type="file"
+                                        multiple
+                                        id="dwi-card-file"
+                                        className="hidden"
+                                        onChange={(e) => handleFileChange(e, "dwi", setDwiFile)}
+                                    />
                                 </div>
                             </div>
+
+                            {/* Other Folders Card */}
+                            <div
+                                onClick={() => {
+                                    document.getElementById("folder-card-file")?.click();
+                                }}
+                                className={`group flex items-center justify-between px-3 py-2 rounded-lg border-2 transition-all cursor-pointer ${folderFiles.length > 0
+                                    ? "border-green-500/20 bg-green-50/30"
+                                    : "border-dashed border-slate-200 hover:border-blue-500/30 hover:bg-slate-50/50"
+                                    }`}
+                            >
+                                <div className="flex items-center gap-2 min-w-0 flex-1">
+                                    <Folder size={14} className={folderFiles.length > 0 ? "text-green-600" : "text-slate-400 group-hover:text-blue-600"} />
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-[11px] font-bold text-slate-700 leading-tight">Other Folders</p>
+                                        <p className="text-[9px] text-slate-400 truncate leading-none mt-0.5">
+                                            {folderFiles.length > 0
+                                            ? `✓ ${folderFiles.length} file(s) selected`
+                                            : "Upload entire folders"}
+                                        </p>
+                                    </div>
+                                </div>
+                                {folderFiles.length > 0 && (
+                                    <button
+                                        type="button"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setFolderFiles([]);
+                                        }}
+                                        className="p-0.5 text-slate-400 hover:text-red-500 rounded"
+                                    >
+                                        <X size={12} />
+                                    </button>
+                                )}
+                                <input
+                                    type="file"
+                                    id="folder-card-file"
+                                    className="hidden"
+                                    {...{ webkitdirectory: "", directory: "", multiple: true } as any}
+                                    onChange={(e) => handleFileChange(e, "folder", setFolderFiles)}
+                                />
+                            </div>
+
+                            {/* UPLOAD STATUS — show after page refresh (existing files) */}
+                            {existingFiles && existingFiles.length > 0 && (
+                                <div className="mt-2 pt-2 border-t border-slate-100">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
+                                        Previously Uploaded
+                                    </p>
+                                    <div className="space-y-1">
+                                        {existingFiles.map((f) => (
+                                            <div
+                                                key={f.id}
+                                                className="flex items-center gap-2 px-2 py-1 bg-green-50 border border-green-100 rounded-lg"
+                                            >
+                                                <CheckCircle2 size={11} className="text-green-500 shrink-0" />
+                                                <span className="text-[10px] font-semibold text-green-700 truncate">
+                                                    {f.fileName}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -446,7 +517,7 @@ export default function AddCaseModal({
                         <div className="flex items-center justify-between pb-1.5 border-b border-slate-100 mb-4">
                             <div className="flex items-center gap-2">
                                 <FileText size={14} className="text-blue-600 shrink-0" />
-                                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Report & Documents</span>
+                                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Report &amp; Documents</span>
                             </div>
                             <span className="text-[9px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-bold">Metadata</span>
                         </div>
@@ -472,17 +543,18 @@ export default function AddCaseModal({
                             <div className="space-y-2">
 
                                 {/* 1. Medical History */}
-                                <div className={`flex items-center justify-between px-3 py-2 rounded-lg border transition-all ${docMedicalHistory ? "border-green-500/20 bg-green-50/30 text-green-700" : "border-slate-200/80 bg-white hover:bg-slate-50/30"
-                                    }`}>
+                                <div className={`flex items-center justify-between px-3 py-2 rounded-lg border transition-all ${docMedicalHistory.length > 0 ? "border-green-500/20 bg-green-50/30 text-green-700" : "border-slate-200/80 bg-white hover:bg-slate-50/30"}`}>
                                     <div className="flex items-center gap-2 min-w-0 flex-1">
-                                        <Paperclip size={12} className={docMedicalHistory ? "text-green-600 shrink-0" : "text-slate-400 shrink-0"} />
+                                        <Paperclip size={12} className={docMedicalHistory.length > 0 ? "text-green-600 shrink-0" : "text-slate-400 shrink-0"} />
                                         <span className="text-[11px] font-semibold text-slate-600 truncate">
-                                            {docMedicalHistory ? (typeof docMedicalHistory === "string" ? docMedicalHistory : docMedicalHistory.name) : "Medical History"}
+                                            {docMedicalHistory.length > 0
+                                                ? `✓ ${docMedicalHistory.length} file(s) selected`
+                                                : "Medical History"}
                                         </span>
                                     </div>
                                     <div className="shrink-0 ml-2">
-                                        {docMedicalHistory ? (
-                                            <button type="button" onClick={() => setDocMedicalHistory(null)} className="text-slate-400 hover:text-red-500 text-[11px]">✕</button>
+                                        {docMedicalHistory.length > 0 ? (
+                                            <button type="button" onClick={() => setDocMedicalHistory([])} className="text-slate-400 hover:text-red-500 text-[11px]">✕</button>
                                         ) : (
                                             <button
                                                 type="button"
@@ -496,26 +568,25 @@ export default function AddCaseModal({
                                             type="file"
                                             id="h-doc"
                                             className="hidden"
-                                            onChange={(e) => {
-                                                const file = e.target.files?.[0];
-                                                if (file) setDocMedicalHistory(file);
-                                            }}
+                                            multiple
+                                            onChange={(e) => handleFileChange(e, "document", setDocMedicalHistory)}
                                         />
                                     </div>
                                 </div>
 
                                 {/* 2. Consent Form */}
-                                <div className={`flex items-center justify-between px-3 py-2 rounded-lg border transition-all ${docConsent ? "border-green-500/20 bg-green-50/30 text-green-700" : "border-slate-200/80 bg-white hover:bg-slate-50/30"
-                                    }`}>
+                                <div className={`flex items-center justify-between px-3 py-2 rounded-lg border transition-all ${docConsent.length > 0 ? "border-green-500/20 bg-green-50/30 text-green-700" : "border-slate-200/80 bg-white hover:bg-slate-50/30"}`}>
                                     <div className="flex items-center gap-2 min-w-0 flex-1">
-                                        <Paperclip size={12} className={docConsent ? "text-green-600 shrink-0" : "text-slate-400 shrink-0"} />
+                                        <Paperclip size={12} className={docConsent.length > 0 ? "text-green-600 shrink-0" : "text-slate-400 shrink-0"} />
                                         <span className="text-[11px] font-semibold text-slate-600 truncate">
-                                            {docConsent ? (typeof docConsent === "string" ? docConsent : docConsent.name) : "Consent Form"}
+                                            {docConsent.length > 0
+                                                ? `✓ ${docConsent.length} file(s) selected`
+                                                : "Consent Form"}
                                         </span>
                                     </div>
                                     <div className="shrink-0 ml-2">
-                                        {docConsent ? (
-                                            <button type="button" onClick={() => setDocConsent(null)} className="text-slate-400 hover:text-red-500 text-[11px]">✕</button>
+                                        {docConsent.length > 0 ? (
+                                            <button type="button" onClick={() => setDocConsent([])} className="text-slate-400 hover:text-red-500 text-[11px]">✕</button>
                                         ) : (
                                             <button
                                                 type="button"
@@ -529,26 +600,25 @@ export default function AddCaseModal({
                                             type="file"
                                             id="c-doc"
                                             className="hidden"
-                                            onChange={(e) => {
-                                                const file = e.target.files?.[0];
-                                                if (file) setDocConsent(file);
-                                            }}
+                                            multiple
+                                            onChange={(e) => handleFileChange(e, "document", setDocConsent)}
                                         />
                                     </div>
                                 </div>
 
                                 {/* 3. Case Report Form */}
-                                <div className={`flex items-center justify-between px-3 py-2 rounded-lg border transition-all ${docCaseReport ? "border-green-500/20 bg-green-50/30 text-green-700" : "border-slate-200/80 bg-white hover:bg-slate-50/30"
-                                    }`}>
+                                <div className={`flex items-center justify-between px-3 py-2 rounded-lg border transition-all ${docCaseReport.length > 0 ? "border-green-500/20 bg-green-50/30 text-green-700" : "border-slate-200/80 bg-white hover:bg-slate-50/30"}`}>
                                     <div className="flex items-center gap-2 min-w-0 flex-1">
-                                        <Paperclip size={12} className={docCaseReport ? "text-green-600 shrink-0" : "text-slate-400 shrink-0"} />
+                                        <Paperclip size={12} className={docCaseReport.length > 0 ? "text-green-600 shrink-0" : "text-slate-400 shrink-0"} />
                                         <span className="text-[11px] font-semibold text-slate-600 truncate">
-                                            {docCaseReport ? (typeof docCaseReport === "string" ? docCaseReport : docCaseReport.name) : "Case Report Form"}
+                                            {docCaseReport.length > 0
+                                                ? `✓ ${docCaseReport.length} file(s) selected`
+                                                : "Case Report Form"}
                                         </span>
                                     </div>
                                     <div className="shrink-0 ml-2">
-                                        {docCaseReport ? (
-                                            <button type="button" onClick={() => setDocCaseReport(null)} className="text-slate-400 hover:text-red-500 text-[11px]">✕</button>
+                                        {docCaseReport.length > 0 ? (
+                                            <button type="button" onClick={() => setDocCaseReport([])} className="text-slate-400 hover:text-red-500 text-[11px]">✕</button>
                                         ) : (
                                             <button
                                                 type="button"
@@ -562,26 +632,25 @@ export default function AddCaseModal({
                                             type="file"
                                             id="cr-doc"
                                             className="hidden"
-                                            onChange={(e) => {
-                                                const file = e.target.files?.[0];
-                                                if (file) setDocCaseReport(file);
-                                            }}
+                                            multiple
+                                            onChange={(e) => handleFileChange(e, "document", setDocCaseReport)}
                                         />
                                     </div>
                                 </div>
 
                                 {/* 4. Patient Info Sheet */}
-                                <div className={`flex items-center justify-between px-3 py-2 rounded-lg border transition-all ${docPatientInfo ? "border-green-500/20 bg-green-50/30 text-green-700" : "border-slate-200/80 bg-white hover:bg-slate-50/30"
-                                    }`}>
+                                <div className={`flex items-center justify-between px-3 py-2 rounded-lg border transition-all ${docPatientInfo.length > 0 ? "border-green-500/20 bg-green-50/30 text-green-700" : "border-slate-200/80 bg-white hover:bg-slate-50/30"}`}>
                                     <div className="flex items-center gap-2 min-w-0 flex-1">
-                                        <Paperclip size={12} className={docPatientInfo ? "text-green-600 shrink-0" : "text-slate-400 shrink-0"} />
+                                        <Paperclip size={12} className={docPatientInfo.length > 0 ? "text-green-600 shrink-0" : "text-slate-400 shrink-0"} />
                                         <span className="text-[11px] font-semibold text-slate-600 truncate">
-                                            {docPatientInfo ? (typeof docPatientInfo === "string" ? docPatientInfo : docPatientInfo.name) : "Patient Info Sheet"}
+                                            {docPatientInfo.length > 0
+                                                ? `✓ ${docPatientInfo.length} file(s) selected`
+                                                : "Patient Info Sheet"}
                                         </span>
                                     </div>
                                     <div className="shrink-0 ml-2">
-                                        {docPatientInfo ? (
-                                            <button type="button" onClick={() => setDocPatientInfo(null)} className="text-slate-400 hover:text-red-500 text-[11px]">✕</button>
+                                        {docPatientInfo.length > 0 ? (
+                                            <button type="button" onClick={() => setDocPatientInfo([])} className="text-slate-400 hover:text-red-500 text-[11px]">✕</button>
                                         ) : (
                                             <button
                                                 type="button"
@@ -595,26 +664,25 @@ export default function AddCaseModal({
                                             type="file"
                                             id="is-doc"
                                             className="hidden"
-                                            onChange={(e) => {
-                                                const file = e.target.files?.[0];
-                                                if (file) setDocPatientInfo(file);
-                                            }}
+                                            multiple
+                                            onChange={(e) => handleFileChange(e, "document", setDocPatientInfo)}
                                         />
                                     </div>
                                 </div>
 
                                 {/* 5. Others */}
-                                <div className={`flex items-center justify-between px-3 py-2 rounded-lg border transition-all ${docOthers ? "border-green-500/20 bg-green-50/30 text-green-700" : "border-slate-200/80 bg-white hover:bg-slate-50/30"
-                                    }`}>
+                                <div className={`flex items-center justify-between px-3 py-2 rounded-lg border transition-all ${docOthers.length > 0 ? "border-green-500/20 bg-green-50/30 text-green-700" : "border-slate-200/80 bg-white hover:bg-slate-50/30"}`}>
                                     <div className="flex items-center gap-2 min-w-0 flex-1">
-                                        <Paperclip size={12} className={docOthers ? "text-green-600 shrink-0" : "text-slate-400 shrink-0"} />
+                                        <Paperclip size={12} className={docOthers.length > 0 ? "text-green-600 shrink-0" : "text-slate-400 shrink-0"} />
                                         <span className="text-[11px] font-semibold text-slate-600 truncate">
-                                            {docOthers ? (typeof docOthers === "string" ? docOthers : docOthers.name) : "Others"}
+                                            {docOthers.length > 0
+                                                ? `✓ ${docOthers.length} file(s) selected`
+                                                : "Others"}
                                         </span>
                                     </div>
                                     <div className="shrink-0 ml-2">
-                                        {docOthers ? (
-                                            <button type="button" onClick={() => setDocOthers(null)} className="text-slate-400 hover:text-red-500 text-[11px]">✕</button>
+                                        {docOthers.length > 0 ? (
+                                            <button type="button" onClick={() => setDocOthers([])} className="text-slate-400 hover:text-red-500 text-[11px]">✕</button>
                                         ) : (
                                             <button
                                                 type="button"
@@ -628,10 +696,8 @@ export default function AddCaseModal({
                                             type="file"
                                             id="o-doc"
                                             className="hidden"
-                                            onChange={(e) => {
-                                                const file = e.target.files?.[0];
-                                                if (file) setDocOthers(file);
-                                            }}
+                                            multiple
+                                            onChange={(e) => handleFileChange(e, "document", setDocOthers)}
                                         />
                                     </div>
                                 </div>

@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url  	    = env("DATABASE_URL")
 }
 
 enum UserRole {
@@ -115,6 +115,7 @@ model StudyFile {
   fileName String
   fileUrl  String
   fileType String
+  folderPath String?
 
   createdAt DateTime @default(now())
 

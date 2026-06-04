@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-
 import prisma from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/current-user";
 
 // =========================
 // GET COMMENTS
@@ -9,46 +9,37 @@ export async function GET(
   request: Request,
   context: any
 ) {
-
   try {
+    const user = await getCurrentUser();
 
-    const params =
-      await context.params;
+    if (!user) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
 
-    const studyId =
-      params.id;
+    const params = await context.params;
+    const studyId = params.id;
 
-    const comments =
-      await prisma.studyComment.findMany({
-        where: {
-          studyId,
-        },
-
-        include: {
-          user: true,
-        },
-
-        orderBy: {
-          createdAt: "asc",
-        },
-      });
-
-    return NextResponse.json(
-      comments
-    );
-
-  } catch (error) {
-
-    console.error(error);
-
-    return NextResponse.json(
-      {
-        error:
-          "Failed to fetch comments",
+    const comments = await prisma.studyComment.findMany({
+      where: {
+        studyId,
       },
-      {
-        status: 500,
-      }
+      include: {
+        user: true,
+      },
+      orderBy: {
+        createdAt: "asc",
+      },
+    });
+
+    return NextResponse.json(comments);
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json(
+      { error: "Failed to fetch comments" },
+      { status: 500 }
     );
   }
 }
@@ -60,75 +51,39 @@ export async function POST(
   request: Request,
   context: any
 ) {
-
   try {
-
-    const params =
-      await context.params;
-
-    const studyId =
-      params.id;
-
-    const body =
-      await request.json();
-
-    const {
-      message,
-      role,
-    } = body;
-
-    // FIND USER BY ROLE
-    const user =
-      await prisma.user.findFirst({
-        where: {
-          role,
-        },
-      });
+    const user = await getCurrentUser();
 
     if (!user) {
-
       return NextResponse.json(
-        {
-          error:
-            "No user found",
-        },
-        {
-          status: 500,
-        }
+        { error: "Unauthorized" },
+        { status: 401 }
       );
     }
 
-    const comment =
-      await prisma.studyComment.create({
-        data: {
-          message,
+    const params = await context.params;
+    const studyId = params.id;
 
-          studyId,
+    const body = await request.json();
+    const { message } = body;
 
-          userId: user.id,
-        },
-
-        include: {
-          user: true,
-        },
-      });
-
-    return NextResponse.json(
-      comment
-    );
-
-  } catch (error) {
-
-    console.error(error);
-
-    return NextResponse.json(
-      {
-        error:
-          "Failed to create comment",
+    const comment = await prisma.studyComment.create({
+      data: {
+        message,
+        studyId,
+        userId: user.id,
       },
-      {
-        status: 500,
-      }
+      include: {
+        user: true,
+      },
+    });
+
+    return NextResponse.json(comment);
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json(
+      { error: "Failed to create comment" },
+      { status: 500 }
     );
   }
 }
