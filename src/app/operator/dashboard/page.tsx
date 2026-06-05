@@ -168,19 +168,36 @@ export default function OperatorDashboard() {
   // =========================
   // DOWNLOAD FILES (ZIP archive download)
   // =========================
-  function downloadFiles(study: any) {
-    if (!study.files || study.files.length === 0) {
-      alert("No files uploaded for this case.");
+  async function downloadFiles(study: any) {
+  try {
+    const response = await fetch(
+      `/api/studies/${study.id}/download`
+    );
+
+    if (!response.ok) {
+      alert("No files found");
       return;
     }
 
-    const link = document.createElement("a");
-    link.href = `/api/studies/${study.id}/download`;
-    link.download = `study_${study.id}.zip`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const files = await response.json();
+
+    if (!files.length) {
+      alert("No files uploaded");
+      return;
+    }
+
+    for (const file of files) {
+      window.open(
+        `/api/files/${file.id}`,
+        "_blank"
+      );
+    }
+
+  } catch (error) {
+    console.error(error);
+    alert("Download failed");
   }
+}
 
   // =========================
   // STATUS UPDATE
