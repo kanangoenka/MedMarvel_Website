@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -65,9 +66,19 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="w-full max-w-md bg-white p-6 rounded-2xl shadow-lg">
-        <h1 className="text-3xl font-bold mb-6 text-center">
-          MedVirtuoso
-        </h1>
+        <div className="flex flex-col items-center mb-6">
+          <Image
+          src="/MedMarvelLogo.jpg"
+          alt="MedMarvel Logo"
+          width={120}
+          height={120}
+          priority
+          className="mb-3"
+          />
+          <h1 className="text-3xl font-bold text-center text-blue-700">
+            MedMarvel Software Solutions
+          </h1>
+        </div>
 
         <form
           onSubmit={handleLogin}
