@@ -22,66 +22,104 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-type Props = {
-  institutions: {
-    id: string;
-    institutionName: string;
-  }[];
-  onCreate: (site: any) => void;
+type Institution = {
+  id: string;
+  name: string;
 };
 
-export default function CreateSiteModal({
-  institutions,
-  onCreate,
-}: Props) {
+export default function CreateSiteModal() {
+  const router = useRouter();
+
+  const [institutions, setInstitutions] =
+    useState<Institution[]>([]);
+
   const [institutionId, setInstitutionId] =
     useState("");
 
   const [siteName, setSiteName] =
     useState("");
 
-  const [adminName, setAdminName] =
+  const [siteAdminName, setSiteAdminName] =
     useState("");
 
-  const [userId, setUserId] =
+  const [siteAdminEmail, setSiteAdminEmail] =
     useState("");
 
-  const [password, setPassword] =
+  const [siteAdminPassword, setSiteAdminPassword] =
     useState("");
 
-  function handleSubmit() {
+  const [loading, setLoading] =
+    useState(false);
+
+  useEffect(() => {
+    fetch("/api/admin/institutions")
+      .then((res) => res.json())
+      .then(setInstitutions)
+      .catch(console.error);
+  }, []);
+
+  async function handleSubmit() {
     if (
       !institutionId ||
-      !siteName.trim() ||
-      !adminName.trim() ||
-      !userId.trim() ||
-      !password.trim()
+      !siteName ||
+      !siteAdminName ||
+      !siteAdminEmail ||
+      !siteAdminPassword
     ) {
       alert("Please fill all fields");
       return;
     }
 
-    const institution =
-      institutions.find(
-        (i) => i.id === institutionId
+    try {
+      setLoading(true);
+
+      const response = await fetch(
+        "/api/super-admin/create-site",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            institutionId,
+            siteName,
+            siteAdminName,
+            siteAdminEmail,
+            siteAdminPassword,
+          }),
+        }
       );
 
-    onCreate({
-      id: crypto.randomUUID(),
-      institutionId,
-      institutionName:
-        institution?.institutionName,
-      siteName,
-      adminName,
-      userId,
-      password,
-    });
+      const data =
+        await response.json();
 
-    setInstitutionId("");
-    setSiteName("");
-    setAdminName("");
-    setUserId("");
-    setPassword("");
+      if (!response.ok) {
+        alert(
+          data.error ||
+            "Failed to create site"
+        );
+        return;
+      }
+
+      alert(
+        "Site created successfully"
+      );
+
+      setInstitutionId("");
+      setSiteName("");
+      setSiteAdminName("");
+      setSiteAdminEmail("");
+      setSiteAdminPassword("");
+
+      router.refresh();
+    } catch (error) {
+      console.error(error);
+
+      alert("Failed to create site");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (

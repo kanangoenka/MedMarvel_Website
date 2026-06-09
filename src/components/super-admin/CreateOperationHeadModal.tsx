@@ -14,56 +14,87 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-type Props = {
-  onCreate: (head: {
-    id: string;
-    name: string;
-    userId: string;
-    password: string;
-  }) => void;
-};
+export default function CreateOperationHeadModal() {
+  const router = useRouter();
 
-export default function CreateOperationHeadModal({
-  onCreate,
-}: Props) {
   const [name, setName] =
     useState("");
 
-  const [userId, setUserId] =
+  const [email, setEmail] =
     useState("");
 
   const [password, setPassword] =
     useState("");
 
-  function handleSubmit() {
+  const [loading, setLoading] =
+    useState(false);
+
+  async function handleSubmit() {
     if (
-      !name.trim() ||
-      !userId.trim() ||
-      !password.trim()
+      !name ||
+      !email ||
+      !password
     ) {
       alert("Please fill all fields");
       return;
     }
 
-    onCreate({
-      id: crypto.randomUUID(),
-      name,
-      userId,
-      password,
-    });
+    try {
+      setLoading(true);
 
-    setName("");
-    setUserId("");
-    setPassword("");
+      const response = await fetch(
+        "/api/super-admin/create-operation-head",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            name,
+            email,
+            password,
+          }),
+        }
+      );
+
+      const data =
+        await response.json();
+
+      if (!response.ok) {
+        alert(
+          data.error ||
+            "Failed to create operation head"
+        );
+        return;
+      }
+
+      alert(
+        "Operation Head created successfully"
+      );
+
+      setName("");
+      setEmail("");
+      setPassword("");
+
+      router.refresh();
+    } catch (error) {
+      console.error(error);
+
+      alert(
+        "Failed to create operation head"
+      );
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
     <Dialog>
       <DialogTrigger
         render={
-          <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-2 h-10 flex items-center justify-center gap-1.5 font-medium transition-all border-none shadow-xs cursor-pointer">
-            <Plus className="w-4 h-4" />
-            Add Operation Head
+          <Button className="w-full">
+            Create Operation Head
           </Button>
         }
       />
