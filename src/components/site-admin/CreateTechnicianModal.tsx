@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dialog";
 
 type Props = {
-  onCreate: (head: {
+  onCreate: (technician: {
     id: string;
     name: string;
     userId: string;
@@ -23,24 +23,15 @@ type Props = {
   }) => void;
 };
 
-export default function CreateOperationHeadModal({
+export default function CreateTechnicianModal({
   onCreate,
 }: Props) {
-  const [name, setName] =
-    useState("");
-
-  const [userId, setUserId] =
-    useState("");
-
-  const [password, setPassword] =
-    useState("");
+  const [name, setName] = useState("");
+  const [userId, setUserId] = useState("");
+  const [password, setPassword] = useState("");
 
   function handleSubmit() {
-    if (
-      !name.trim() ||
-      !userId.trim() ||
-      !password.trim()
-    ) {
+    if (!name || !userId || !password) {
       alert("Please fill all fields");
       return;
     }
@@ -61,54 +52,45 @@ export default function CreateOperationHeadModal({
     <Dialog>
       <DialogTrigger
         render={
-          <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-2 h-10 flex items-center justify-center gap-1.5 font-medium transition-all border-none shadow-xs cursor-pointer">
-            <Plus className="w-4 h-4" />
-            Add Operation Head
+          <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-2 h-10">
+            <Plus className="w-4 h-4 mr-2" />
+            Add Technician
           </Button>
         }
       />
 
       <DialogContent className="rounded-2xl border border-gray-100 p-6 shadow-xl bg-white max-w-md w-full">
-        <DialogHeader className="pb-2">
+        <DialogHeader>
           <DialogTitle className="text-lg font-bold text-[#071739]">
-            Add Operation Head
+            Add Technician
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 mt-2">
           <Input
-            placeholder="Operation Head Name"
+            placeholder="Technician Name"
             value={name}
-            onChange={(e) =>
-              setName(e.target.value)
-            }
-            className="rounded-xl border border-gray-200 px-3.5 py-2.5 h-11 text-sm"
+            onChange={(e) => setName(e.target.value)}
           />
 
           <Input
             placeholder="User ID"
             value={userId}
-            onChange={(e) =>
-              setUserId(e.target.value)
-            }
-            className="rounded-xl border border-gray-200 px-3.5 py-2.5 h-11 text-sm"
+            onChange={(e) => setUserId(e.target.value)}
           />
 
           <Input
             type="password"
             placeholder="Password"
             value={password}
-            onChange={(e) =>
-              setPassword(e.target.value)
-            }
-            className="rounded-xl border border-gray-200 px-3.5 py-2.5 h-11 text-sm"
+            onChange={(e) => setPassword(e.target.value)}
           />
 
           <Button
             onClick={handleSubmit}
-            className="w-full bg-[#071739] hover:bg-[#0b2559] text-white rounded-xl py-2 h-11 font-semibold transition-all border-none cursor-pointer"
+            className="w-full bg-[#071739]"
           >
-            Create Operation Head
+            Create Technician
           </Button>
         </div>
       </DialogContent>
