@@ -52,11 +52,13 @@ export async function POST(req: Request) {
     }
 
     const token =
-      await generateToken({
-        userId: user.id,
-        email: user.email,
-        role: user.role,
-      });
+  await generateToken({
+    userId: user.id,
+    email: user.email,
+    role: user.role,
+    institutionId: user.institutionId,
+    siteId: user.siteId,
+  });
 
     const response =
       NextResponse.json({
