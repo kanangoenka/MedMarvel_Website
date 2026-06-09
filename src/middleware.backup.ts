@@ -42,11 +42,33 @@ export async function middleware(req: NextRequest) {
 
     const role = verified.role as string;
 
-    const getRoleHomepage = (r: string) => {
-      if (r === "ADMIN") return "/admin";
-      if (r === "OPERATOR") return "/operator/dashboard";
-      return "/client/dashboard"; // CLIENT role
-    };
+    const getRoleHomepage = (role: string) => {
+  switch (role) {
+    case "SUPER_ADMIN":
+      return "/super-admin";
+
+    case "INSTITUTION_MANAGER":
+      return "/institution-manager";
+
+    case "SITE_ADMIN":
+      return "/site-admin";
+
+    case "OPERATION_HEAD":
+      return "/operation-head";
+
+    case "OPERATOR":
+      return "/operator";
+
+    case "TECHNICIAN":
+      return "/technician";
+
+    case "DOCTOR":
+      return "/doctor";
+
+    default:
+      return "/login";
+  }
+};
 
     const homepage = getRoleHomepage(role);
 

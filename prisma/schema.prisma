@@ -3,18 +3,23 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url  	    = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 enum UserRole {
-  CLIENT
+  SUPER_ADMIN
+  INSTITUTION_MANAGER
+  SITE_ADMIN
+  OPERATION_HEAD
   OPERATOR
-  ADMIN
+  TECHNICIAN
+  DOCTOR
 }
 
 enum StudyStatus {
   UPLOADED
+  ASSIGNED
   PROCESSING
   READY
 }
@@ -22,6 +27,7 @@ enum StudyStatus {
 model Institution {
   id        String   @id @default(cuid())
   name      String
+  isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
 
   sites Site[]
@@ -29,16 +35,20 @@ model Institution {
 }
 
 model Site {
-  id            String   @id @default(cuid())
+  id            String @id @default(cuid())
   name          String
   institutionId String
-  createdAt     DateTime @default(now())
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
 
   institution Institution @relation(fields: [institutionId], references: [id])
 
+  users   User[]
   studies Study[]
 
-  users User[]
+  operatorAssignments OperatorSiteAssignment[]
 }
 
 model User {
@@ -50,35 +60,58 @@ model User {
 
   role UserRole
 
-  institutionId String
+  institutionId String?
   siteId        String?
 
-  assignedOperatorId String?
+  isActive Boolean @default(true)
 
-  assignedOperator User? @relation("OperatorAssignments", fields: [assignedOperatorId], references: [id])
+  createdAt DateTime @default(now())
 
-  assignedDoctors User[] @relation("OperatorAssignments")
-
-  institution Institution @relation(fields: [institutionId], references: [id])
+  institution Institution? @relation(fields: [institutionId], references: [id])
 
   site Site? @relation(fields: [siteId], references: [id])
 
-  studies Study[]
+  technicianStudies Study[] @relation("TechnicianStudies")
+
+  doctorStudies Study[] @relation("DoctorStudies")
+
+  operatorStudies Study[] @relation("OperatorStudies")
 
   comments StudyComment[]
+
+  operatorAssignments OperatorSiteAssignment[]
+}
+
+model OperatorSiteAssignment {
+  id String @id @default(cuid())
+
+  operatorId String
+  siteId     String
+
+  createdAt DateTime @default(now())
+
+  operator User @relation(fields: [operatorId], references: [id])
+
+  site Site @relation(fields: [siteId], references: [id])
+
+  @@unique([operatorId, siteId])
 }
 
 model Patient {
-  id          String   @id @default(cuid())
+  id String @id @default(cuid())
+
   patientId   String
   patientName String
-  createdAt   DateTime @default(now())
+
+  createdAt DateTime @default(now())
 
   studies Study[]
 }
 
 model Study {
   id String @id @default(cuid())
+
+  caseNumber String @unique
 
   studyDescription String?
   modality         String?
@@ -87,7 +120,11 @@ model Study {
 
   patientId String?
   siteId    String
-  userId    String
+
+  technicianId String
+  doctorId     String
+
+  operatorId String?
 
   imagingLink String?
 
@@ -98,7 +135,11 @@ model Study {
 
   site Site @relation(fields: [siteId], references: [id])
 
-  user User @relation(fields: [userId], references: [id])
+  technician User @relation("TechnicianStudies", fields: [technicianId], references: [id])
+
+  doctor User @relation("DoctorStudies", fields: [doctorId], references: [id])
+
+  operator User? @relation("OperatorStudies", fields: [operatorId], references: [id])
 
   files StudyFile[]
 
@@ -112,9 +153,9 @@ model StudyFile {
 
   studyId String
 
-  fileName String
-  fileUrl  String
-  fileType String
+  fileName   String
+  fileUrl    String
+  fileType   String
   folderPath String?
 
   createdAt DateTime @default(now())

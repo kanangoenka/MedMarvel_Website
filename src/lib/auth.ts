@@ -8,6 +8,8 @@ export async function generateToken(payload: {
   userId: string;
   email: string;
   role: string;
+  institutionId?: string | null;
+  siteId?: string | null;
 }) {
   return await new SignJWT(payload)
     .setProtectedHeader({
