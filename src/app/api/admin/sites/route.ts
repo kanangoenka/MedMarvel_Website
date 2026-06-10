@@ -1,46 +1,66 @@
 import { NextResponse } from "next/server";
+
 import prisma from "@/lib/prisma";
 
-export async function GET() {
-  try {
-    const sites = await prisma.site.findMany({
-      include: {
-        institution: true,
-      },
-      orderBy: {
-        name: "asc",
-      },
-    });
+import { getCurrentUser } from "@/lib/current-user";
 
-    return NextResponse.json(sites);
-  } catch (error) {
-    console.error(error);
+export async function GET(
+  req: Request
+) {
+  try {
+    const currentUser =
+      await getCurrentUser();
+
+    if (!currentUser) {
+      return NextResponse.json(
+        {
+          error: "Unauthorized",
+        },
+        {
+          status: 401,
+        }
+      );
+    }
+
+    const { searchParams } =
+      new URL(req.url);
+
+    const institutionId =
+      searchParams.get(
+        "institutionId"
+      );
+
+    const sites =
+      await prisma.site.findMany({
+        where: institutionId
+          ? {
+              institutionId,
+            }
+          : undefined,
+
+        include: {
+          institution: true,
+        },
+
+        orderBy: {
+          name: "asc",
+        },
+      });
 
     return NextResponse.json(
-      { error: "Failed to fetch sites" },
-      { status: 500 }
+      sites
     );
-  }
-}
-
-export async function POST(req: Request) {
-  try {
-    const body = await req.json();
-
-    const site = await prisma.site.create({
-      data: {
-        name: body.name,
-        institutionId: body.institutionId,
-      },
-    });
-
-    return NextResponse.json(site);
   } catch (error) {
     console.error(error);
 
     return NextResponse.json(
-      { error: "Failed to create site" },
-      { status: 500 }
+      {
+        error:
+          "Failed to fetch sites",
+      },
+      {
+        status: 500,
+      }
     );
   }
 }

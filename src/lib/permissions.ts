@@ -1,5 +1,17 @@
 import { UserRole } from "@prisma/client";
 
+export const ADMIN_ROLES: UserRole[] = [
+  "SUPER_ADMIN",
+  "INSTITUTION_MANAGER",
+  "SITE_ADMIN",
+];
+
+export const CASE_ROLES: UserRole[] = [
+  "DOCTOR",
+  "TECHNICIAN",
+  "OPERATOR",
+];
+
 export function isSuperAdmin(
   role: UserRole
 ) {
@@ -94,4 +106,26 @@ export function canViewAllCases(
   role: UserRole
 ) {
   return role === "SUPER_ADMIN";
+}
+
+export function canCreateCase(
+  role: UserRole
+) {
+  return (
+    role === "DOCTOR" ||
+    role === "TECHNICIAN"
+  );
+}
+
+export function canCommentOnStudy(
+  role: UserRole
+) {
+  return [
+    "DOCTOR",
+    "TECHNICIAN",
+    "OPERATOR",
+    "SITE_ADMIN",
+    "INSTITUTION_MANAGER",
+    "SUPER_ADMIN",
+  ].includes(role);
 }

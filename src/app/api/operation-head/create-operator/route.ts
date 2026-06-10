@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 import { hashPassword } from "@/lib/hash";
 
 import { getCurrentUser } from "@/lib/current-user";
-import { canCreateInstitution } from "@/lib/permissions";
+import { canCreateOperator } from "@/lib/permissions";
 
 import { UserRole } from "@prisma/client";
 
@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     }
 
     if (
-      !canCreateInstitution(
+      !canCreateOperator(
         currentUser.role
       )
     ) {
@@ -42,17 +42,16 @@ export async function POST(req: Request) {
     const body = await req.json();
 
     const {
-      institutionName,
-      managerName,
-      managerEmail,
-      managerPassword,
+      name,
+      email,
+      password,
+      siteIds,
     } = body;
 
     if (
-      !institutionName ||
-      !managerName ||
-      !managerEmail ||
-      !managerPassword
+      !name ||
+      !email ||
+      !password
     ) {
       return NextResponse.json(
         {
@@ -68,7 +67,7 @@ export async function POST(req: Request) {
     const existingUser =
       await prisma.user.findUnique({
         where: {
-          email: managerEmail,
+          email,
         },
       });
 
@@ -84,67 +83,99 @@ export async function POST(req: Request) {
       );
     }
 
+    const operationHeadSites =
+      await prisma.operationHeadSiteAssignment.findMany(
+        {
+          where: {
+            operationHeadId:
+              currentUser.id,
+          },
+        }
+      );
+
+    const allowedSiteIds =
+      operationHeadSites.map(
+        (site) => site.siteId
+      );
+
+    const invalidSite =
+      siteIds?.find(
+        (siteId: string) =>
+          !allowedSiteIds.includes(
+            siteId
+          )
+      );
+
+    if (invalidSite) {
+      return NextResponse.json(
+        {
+          error:
+            "You can only assign operators to your own sites",
+        },
+        {
+          status: 403,
+        }
+      );
+    }
+
     const hashedPassword =
       await hashPassword(
-        managerPassword
+        password
       );
 
     const result =
       await prisma.$transaction(
         async (tx) => {
-          const institution =
-            await tx.institution.create({
-              data: {
-                name:
-                  institutionName.trim(),
-              },
-            });
-
-          const manager =
+          const operator =
             await tx.user.create({
               data: {
                 name:
-                  managerName.trim(),
+                  name.trim(),
 
-                email:
-                  managerEmail
-                    .trim()
-                    .toLowerCase(),
+                email: email
+                  .trim()
+                  .toLowerCase(),
 
                 password:
                   hashedPassword,
 
                 role:
-                  UserRole.INSTITUTION_MANAGER,
-
-                institutionId:
-                  institution.id,
+                  UserRole.OPERATOR,
               },
             });
 
-          return {
-            institution,
-            manager,
-          };
+          if (
+            siteIds &&
+            Array.isArray(siteIds)
+          ) {
+            await tx.operatorSiteAssignment.createMany(
+              {
+                data:
+                  siteIds.map(
+                    (
+                      siteId: string
+                    ) => ({
+                      operatorId:
+                        operator.id,
+
+                      siteId,
+                    })
+                  ),
+              }
+            );
+          }
+
+          return operator;
         }
       );
 
     return NextResponse.json({
       success: true,
 
-      institution: {
-        id:
-          result.institution.id,
-        name:
-          result.institution.name,
-      },
-
-      manager: {
-        id: result.manager.id,
-        name:
-          result.manager.name,
-        email:
-          result.manager.email,
+      user: {
+        id: result.id,
+        name: result.name,
+        email: result.email,
       },
     });
   } catch (error) {
@@ -153,7 +184,7 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         error:
-          "Failed to create institution",
+          "Failed to create operator",
       },
       {
         status: 500,

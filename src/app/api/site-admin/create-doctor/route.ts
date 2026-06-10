@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 import { hashPassword } from "@/lib/hash";
 
 import { getCurrentUser } from "@/lib/current-user";
-import { canCreateInstitution } from "@/lib/permissions";
+import { canCreateDoctor } from "@/lib/permissions";
 
 import { UserRole } from "@prisma/client";
 
@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     }
 
     if (
-      !canCreateInstitution(
+      !canCreateDoctor(
         currentUser.role
       )
     ) {
@@ -42,17 +42,15 @@ export async function POST(req: Request) {
     const body = await req.json();
 
     const {
-      institutionName,
-      managerName,
-      managerEmail,
-      managerPassword,
+      name,
+      email,
+      password,
     } = body;
 
     if (
-      !institutionName ||
-      !managerName ||
-      !managerEmail ||
-      !managerPassword
+      !name ||
+      !email ||
+      !password
     ) {
       return NextResponse.json(
         {
@@ -68,7 +66,7 @@ export async function POST(req: Request) {
     const existingUser =
       await prisma.user.findUnique({
         where: {
-          email: managerEmail,
+          email,
         },
       });
 
@@ -86,65 +84,39 @@ export async function POST(req: Request) {
 
     const hashedPassword =
       await hashPassword(
-        managerPassword
+        password
       );
 
-    const result =
-      await prisma.$transaction(
-        async (tx) => {
-          const institution =
-            await tx.institution.create({
-              data: {
-                name:
-                  institutionName.trim(),
-              },
-            });
+    const doctor =
+      await prisma.user.create({
+        data: {
+          name: name.trim(),
 
-          const manager =
-            await tx.user.create({
-              data: {
-                name:
-                  managerName.trim(),
+          email: email
+            .trim()
+            .toLowerCase(),
 
-                email:
-                  managerEmail
-                    .trim()
-                    .toLowerCase(),
+          password:
+            hashedPassword,
 
-                password:
-                  hashedPassword,
+          role:
+            UserRole.DOCTOR,
 
-                role:
-                  UserRole.INSTITUTION_MANAGER,
+          siteId:
+            currentUser.siteId,
 
-                institutionId:
-                  institution.id,
-              },
-            });
-
-          return {
-            institution,
-            manager,
-          };
-        }
-      );
+          institutionId:
+            currentUser.institutionId,
+        },
+      });
 
     return NextResponse.json({
       success: true,
 
-      institution: {
-        id:
-          result.institution.id,
-        name:
-          result.institution.name,
-      },
-
-      manager: {
-        id: result.manager.id,
-        name:
-          result.manager.name,
-        email:
-          result.manager.email,
+      user: {
+        id: doctor.id,
+        name: doctor.name,
+        email: doctor.email,
       },
     });
   } catch (error) {
@@ -153,7 +125,7 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         error:
-          "Failed to create institution",
+          "Failed to create doctor",
       },
       {
         status: 500,
