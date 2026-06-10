@@ -4,14 +4,22 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
+import { getDashboardRoute } from "@/lib/get-dashboard-route";
+
 export default function LoginPage() {
   const router = useRouter();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] =
+    useState("");
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [password, setPassword] =
+    useState("");
+
+  const [loading, setLoading] =
+    useState(false);
+
+  const [error, setError] =
+    useState("");
 
   async function handleLogin(
     e: React.FormEvent
@@ -26,10 +34,12 @@ export default function LoginPage() {
         "/api/auth/login",
         {
           method: "POST",
+
           headers: {
             "Content-Type":
               "application/json",
           },
+
           body: JSON.stringify({
             email,
             password,
@@ -37,53 +47,68 @@ export default function LoginPage() {
         }
       );
 
-      const data = await res.json();
+      const data =
+        await res.json();
 
       if (!res.ok) {
         setError(
-          data.error || "Login failed"
+          data.error ||
+            "Login failed"
         );
 
         setLoading(false);
         return;
       }
 
-      if (data.role === "OPERATOR") {
-        router.push("/operator/dashboard");
-        } 
-    else {
-  router.push("/client/dashboard");
-}
+      const route =
+        getDashboardRoute(
+          data.role
+        );
 
+      router.push(route);
 
-    } catch {
-      setError("Something went wrong");
+      router.refresh();
+
+      return;
+
+    } catch (error) {
+      console.error(error);
+
+      setError(
+        "Something went wrong"
+      );
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
+
       <div className="w-full max-w-md bg-white p-6 rounded-2xl shadow-lg">
+
         <div className="flex flex-col items-center mb-6">
+
           <Image
-          src="/MedMarvelLogo.jpg"
-          alt="MedMarvel Logo"
-          width={120}
-          height={120}
-          priority
-          className="mb-3"
+            src="/MedMarvelLogo.jpg"
+            alt="MedMarvel Logo"
+            width={120}
+            height={120}
+            priority
+            className="mb-3"
           />
+
           <h1 className="text-3xl font-bold text-center text-blue-700">
             MedMarvel Software Solutions
           </h1>
+
         </div>
 
         <form
           onSubmit={handleLogin}
           className="space-y-4"
         >
+
           <div>
             <label className="block mb-1 text-sm font-medium">
               Email
@@ -93,7 +118,9 @@ export default function LoginPage() {
               type="email"
               value={email}
               onChange={(e) =>
-                setEmail(e.target.value)
+                setEmail(
+                  e.target.value
+                )
               }
               className="w-full border rounded-lg px-4 py-2"
               required
@@ -127,14 +154,17 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
           >
             {loading
               ? "Logging in..."
               : "Login"}
           </button>
+
         </form>
+
       </div>
+
     </div>
   );
 }
