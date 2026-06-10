@@ -45,7 +45,6 @@ model Site {
 
   institution Institution @relation(fields: [institutionId], references: [id])
 
-  operationHeadAssignments OperationHeadSiteAssignment[]
 
   users   User[]
   studies Study[]
@@ -81,7 +80,7 @@ model User {
 
   uploadedStudies Study[] @relation("UploadedStudies")
 
-  operationHeadAssignments OperationHeadSiteAssignment[] @relation("OperationHeadAssignments")
+  
 
   comments StudyComment[]
 
@@ -103,20 +102,6 @@ model OperatorSiteAssignment {
   @@unique([operatorId, siteId])
 }
 
-model OperationHeadSiteAssignment {
-  id String @id @default(cuid())
-
-  operationHeadId String
-  siteId          String
-
-  createdAt DateTime @default(now())
-
-  operationHead User @relation("OperationHeadAssignments", fields: [operationHeadId], references: [id])
-
-  site Site @relation(fields: [siteId], references: [id])
-
-  @@unique([operationHeadId, siteId])
-}
 
 model Patient {
   id String @id @default(cuid())

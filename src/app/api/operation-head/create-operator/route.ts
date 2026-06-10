@@ -67,7 +67,9 @@ export async function POST(req: Request) {
     const existingUser =
       await prisma.user.findUnique({
         where: {
-          email,
+          email: email
+            .trim()
+            .toLowerCase(),
         },
       });
 
@@ -79,41 +81,6 @@ export async function POST(req: Request) {
         },
         {
           status: 400,
-        }
-      );
-    }
-
-    const operationHeadSites =
-      await prisma.operationHeadSiteAssignment.findMany(
-        {
-          where: {
-            operationHeadId:
-              currentUser.id,
-          },
-        }
-      );
-
-    const allowedSiteIds =
-      operationHeadSites.map(
-        (site) => site.siteId
-      );
-
-    const invalidSite =
-      siteIds?.find(
-        (siteId: string) =>
-          !allowedSiteIds.includes(
-            siteId
-          )
-      );
-
-    if (invalidSite) {
-      return NextResponse.json(
-        {
-          error:
-            "You can only assign operators to your own sites",
-        },
-        {
-          status: 403,
         }
       );
     }
@@ -146,8 +113,27 @@ export async function POST(req: Request) {
 
           if (
             siteIds &&
-            Array.isArray(siteIds)
+            Array.isArray(siteIds) &&
+            siteIds.length > 0
           ) {
+            const sites =
+              await tx.site.findMany({
+                where: {
+                  id: {
+                    in: siteIds,
+                  },
+                },
+              });
+
+            if (
+              sites.length !==
+              siteIds.length
+            ) {
+              throw new Error(
+                "One or more selected sites do not exist"
+              );
+            }
+
             await tx.operatorSiteAssignment.createMany(
               {
                 data:
@@ -178,6 +164,7 @@ export async function POST(req: Request) {
         email: result.email,
       },
     });
+
   } catch (error) {
     console.error(error);
 

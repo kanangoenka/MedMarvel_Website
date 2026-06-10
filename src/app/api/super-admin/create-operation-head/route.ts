@@ -45,7 +45,6 @@ export async function POST(req: Request) {
       name,
       email,
       password,
-      siteIds,
     } = body;
 
     if (
@@ -67,7 +66,9 @@ export async function POST(req: Request) {
     const existingUser =
       await prisma.user.findUnique({
         where: {
-          email,
+          email: email
+            .trim()
+            .toLowerCase(),
         },
       });
 
@@ -88,60 +89,33 @@ export async function POST(req: Request) {
         password
       );
 
-    const result =
-      await prisma.$transaction(
-        async (tx) => {
-          const operationHead =
-            await tx.user.create({
-              data: {
-                name: name.trim(),
+    const operationHead =
+      await prisma.user.create({
+        data: {
+          name: name.trim(),
 
-                email: email
-                  .trim()
-                  .toLowerCase(),
+          email: email
+            .trim()
+            .toLowerCase(),
 
-                password:
-                  hashedPassword,
+          password:
+            hashedPassword,
 
-                role:
-                  UserRole.OPERATION_HEAD,
-              },
-            });
-
-          if (
-            siteIds &&
-            Array.isArray(siteIds)
-          ) {
-            await tx.operationHeadSiteAssignment.createMany(
-              {
-                data:
-                  siteIds.map(
-                    (
-                      siteId: string
-                    ) => ({
-                      operationHeadId:
-                        operationHead.id,
-
-                      siteId,
-                    })
-                  ),
-              }
-            );
-          }
-
-          return operationHead;
-        }
-      );
+          role:
+            UserRole.OPERATION_HEAD,
+        },
+      });
 
     return NextResponse.json({
       success: true,
 
       user: {
-        id: result.id,
-        name: result.name,
-        email: result.email,
+        id: operationHead.id,
+        name: operationHead.name,
+        email: operationHead.email,
       },
     });
+
   } catch (error) {
     console.error(error);
 
