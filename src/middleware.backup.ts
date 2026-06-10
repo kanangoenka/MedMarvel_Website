@@ -1,108 +1,187 @@
 import { NextRequest, NextResponse } from "next/server";
+
 import { verifyToken } from "@/lib/auth";
 
-console.log("MIDDLEWARE RUNNING");
+export async function middleware(
+  request: NextRequest
+) {
+  const token =
+    request.cookies.get("token")
+      ?.value;
 
-export async function middleware(req: NextRequest) {
-  const token = req.cookies.get("token")?.value;
-  const { pathname } = req.nextUrl;
+  const pathname =
+    request.nextUrl.pathname;
 
-  const isAuthPage = pathname === "/login";
-  const isAdminRoute = pathname.startsWith("/admin");
-  const isOperatorRoute = pathname.startsWith("/operator");
-  const isClientRoute = pathname.startsWith("/client");
-  const isViewerRoute = pathname.startsWith("/viewer");
-  const isDashboardRoute = pathname.startsWith("/dashboard");
-  const isRootRoute = pathname === "/";
+  // Public Routes
 
-  const isProtectedRoute =
-    isAdminRoute ||
-    isOperatorRoute ||
-    isClientRoute ||
-    isViewerRoute ||
-    isDashboardRoute ||
-    isRootRoute;
-
-  if (isProtectedRoute) {
-    if (!token) {
-      if (isAuthPage) {
-        return NextResponse.next();
-      }
-      return NextResponse.redirect(new URL("/login", req.url));
-    }
-
-    const verified = await verifyToken(token);
-
-    if (!verified) {
-      // Clear invalid token cookie and redirect to login
-      const response = NextResponse.redirect(new URL("/login", req.url));
-      response.cookies.delete("token");
-      return response;
-    }
-
-    const role = verified.role as string;
-
-    const getRoleHomepage = (role: string) => {
-  switch (role) {
-    case "SUPER_ADMIN":
-      return "/super-admin";
-
-    case "INSTITUTION_MANAGER":
-      return "/institution-manager";
-
-    case "SITE_ADMIN":
-      return "/site-admin";
-
-    case "OPERATION_HEAD":
-      return "/operation-head";
-
-    case "OPERATOR":
-      return "/operator";
-
-    case "TECHNICIAN":
-      return "/technician";
-
-    case "DOCTOR":
-      return "/doctor";
-
-    default:
-      return "/login";
+  if (
+    pathname === "/login" ||
+    pathname.startsWith("/api/auth")
+  ) {
+    return NextResponse.next();
   }
-};
 
-    const homepage = getRoleHomepage(role);
+  // Not logged in
 
-    // Redirect root page or generic /dashboard route to the role-specific homepage
-    if (isRootRoute || isDashboardRoute) {
-      return NextResponse.redirect(new URL(homepage, req.url));
-    }
+  if (!token) {
+    return NextResponse.redirect(
+      new URL(
+        "/login",
+        request.url
+      )
+    );
+  }
 
-    // Role access authorization check
-    if (isAdminRoute && role !== "ADMIN") {
-      return NextResponse.redirect(new URL(homepage, req.url));
-    }
+  const payload =
+    await verifyToken(token);
 
-    if (isOperatorRoute && role !== "OPERATOR") {
-      return NextResponse.redirect(new URL(homepage, req.url));
-    }
+  if (!payload) {
+    return NextResponse.redirect(
+      new URL(
+        "/login",
+        request.url
+      )
+    );
+  }
 
-    if (isClientRoute && role !== "CLIENT") {
-      return NextResponse.redirect(new URL(homepage, req.url));
+  const role =
+    payload.role as string;
+
+  // SUPER ADMIN
+
+  if (
+    pathname.startsWith(
+      "/super-admin"
+    )
+  ) {
+    if (
+      role !==
+      "SUPER_ADMIN"
+    ) {
+      return NextResponse.redirect(
+        new URL(
+          "/login",
+          request.url
+        )
+      );
     }
   }
 
-  // Prevent logged-in users from visiting login page
-  if (isAuthPage && token) {
-    const verified = await verifyToken(token);
-    if (verified) {
-      const role = verified.role as string;
-      const homepage =
-        role === "ADMIN"
-          ? "/admin"
-          : role === "OPERATOR"
-          ? "/operator/dashboard"
-          : "/client/dashboard";
-      return NextResponse.redirect(new URL(homepage, req.url));
+  // INSTITUTION MANAGER
+
+  if (
+    pathname.startsWith(
+      "/institution-manager"
+    )
+  ) {
+    if (
+      role !==
+      "INSTITUTION_MANAGER"
+    ) {
+      return NextResponse.redirect(
+        new URL(
+          "/login",
+          request.url
+        )
+      );
+    }
+  }
+
+  // SITE ADMIN
+
+  if (
+    pathname.startsWith(
+      "/site-admin"
+    )
+  ) {
+    if (
+      role !==
+      "SITE_ADMIN"
+    ) {
+      return NextResponse.redirect(
+        new URL(
+          "/login",
+          request.url
+        )
+      );
+    }
+  }
+
+  // OPERATION HEAD
+
+  if (
+    pathname.startsWith(
+      "/operation-head"
+    )
+  ) {
+    if (
+      role !==
+      "OPERATION_HEAD"
+    ) {
+      return NextResponse.redirect(
+        new URL(
+          "/login",
+          request.url
+        )
+      );
+    }
+  }
+
+  // OPERATOR
+
+  if (
+    pathname.startsWith(
+      "/operator"
+    )
+  ) {
+    if (
+      role !== "OPERATOR"
+    ) {
+      return NextResponse.redirect(
+        new URL(
+          "/login",
+          request.url
+        )
+      );
+    }
+  }
+
+  // DOCTOR
+
+  if (
+    pathname.startsWith(
+      "/doctor"
+    )
+  ) {
+    if (
+      role !== "DOCTOR"
+    ) {
+      return NextResponse.redirect(
+        new URL(
+          "/login",
+          request.url
+        )
+      );
+    }
+  }
+
+  // TECHNICIAN
+
+  if (
+    pathname.startsWith(
+      "/technician"
+    )
+  ) {
+    if (
+      role !==
+      "TECHNICIAN"
+    ) {
+      return NextResponse.redirect(
+        new URL(
+          "/login",
+          request.url
+        )
+      );
     }
   }
 
@@ -111,12 +190,12 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
-    "/",
-    "/login",
-    "/admin/:path*",
+    "/super-admin/:path*",
+    "/institution-manager/:path*",
+    "/site-admin/:path*",
+    "/operation-head/:path*",
     "/operator/:path*",
-    "/client/:path*",
-    "/viewer/:path*",
-    "/dashboard/:path*",
+    "/doctor/:path*",
+    "/technician/:path*",
   ],
 };
