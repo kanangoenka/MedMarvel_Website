@@ -12,6 +12,30 @@ import CreateCaseModal from "@/components/technician/CreateCaseModal";
 
 export default function TechnicianPage() {
   const [cases, setCases] = useState<any[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [patientId, setPatientId] = useState("");
+  const [patientName, setPatientName] = useState("");
+  const [age, setAge] = useState("");
+  const [gender, setGender] = useState<"M" | "F" | "">("");
+  const [studyDescription, setStudyDescription] = useState("");
+
+  const [doctorId, setDoctorId] = useState("");
+
+  const [reportUrl, setReportUrl] = useState("");
+
+  const [mriFile, setMriFile] = useState<File[]>([]);
+  const [petFile, setPetFile] = useState<File[]>([]);
+  const [dwiFile, setDwiFile] = useState<File[]>([]);
+  const [otherModalityFiles, setOtherModalityFiles] = useState<File[]>([]);
+  const [folderFiles, setFolderFiles] = useState<File[]>([]);
+
+  const [docMedicalHistory, setDocMedicalHistory] = useState<File[]>([]);
+  const [docConsent, setDocConsent] = useState<File[]>([]);
+  const [docCaseReport, setDocCaseReport] = useState<File[]>([]);
+  const [docPatientInfo, setDocPatientInfo] = useState<File[]>([]);
+  const [docOthers, setDocOthers] = useState<File[]>([]);
+
+  const [modality, setModality] = useState("");
 
   // Mock Doctors for now
   const doctors = [
@@ -93,7 +117,7 @@ Total Files: ${totalFiles}`
           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-medium"
           >
             + Add Case
-          </button>
+        </button>
 
           
         </div>
@@ -370,7 +394,70 @@ Total Files: ${totalFiles}`
         </div> */}
 
       </div>
+    <CreateCaseModal
+  isOpen={isModalOpen}
+  onClose={() => setIsModalOpen(false)}
+  editingStudyId={null}
+  onSubmit={() => {
+    console.log("submit");
+    setIsModalOpen(false);
+  }}
 
+  patientId={patientId}
+  setPatientId={setPatientId}
+
+  patientName={patientName}
+  setPatientName={setPatientName}
+
+  age={age}
+  setAge={setAge}
+
+  gender={gender}
+  setGender={setGender}
+
+  studyDescription={studyDescription}
+  setStudyDescription={setStudyDescription}
+
+  doctors={doctors}
+  doctorId={doctorId}
+  setDoctorId={setDoctorId}
+
+  reportUrl={reportUrl}
+  setReportUrl={setReportUrl}
+
+  mriFile={mriFile}
+  setmriFile={setMriFile}
+
+  petFile={petFile}
+  setPetFile={setPetFile}
+
+  dwiFile={dwiFile}
+  setDwiFile={setDwiFile}
+
+  otherModalityFiles={otherModalityFiles}
+  setOtherModalityFiles={setOtherModalityFiles}
+
+  folderFiles={folderFiles}
+  setFolderFiles={setFolderFiles}
+
+  docMedicalHistory={docMedicalHistory}
+  setDocMedicalHistory={setDocMedicalHistory}
+
+  docConsent={docConsent}
+  setDocConsent={setDocConsent}
+
+  docCaseReport={docCaseReport}
+  setDocCaseReport={setDocCaseReport}
+
+  docPatientInfo={docPatientInfo}
+  setDocPatientInfo={setDocPatientInfo}
+
+  docOthers={docOthers}
+  setDocOthers={setDocOthers}
+
+  setModality={setModality}
+  loading={false}
+/>
     </div>
   );
 }
