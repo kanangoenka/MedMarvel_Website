@@ -11,7 +11,7 @@ type SidebarProps = {
   setCollapsed: (value: boolean) => void;
 };
 
-export default function RoleSidebar({
+export default function RolSidebar({
   role,
   collapsed,
   setCollapsed,

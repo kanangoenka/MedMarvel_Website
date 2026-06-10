@@ -1,12 +1,12 @@
 import DashboardShell from "@/components/dashboard/DashboardShell";
 
-export default function OperatorLayout({
+export default function DoctorLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <DashboardShell role="OPERATOR">
+    <DashboardShell role="DOCTOR">
       {children}
     </DashboardShell>
   );

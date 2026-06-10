@@ -1,9 +1,9 @@
 import RoleBasedWorklist from "@/components/client-dashboard/RoleBasedWorklist";
 
-export default function ClientDashboardPage() {
+export default function InstitutionManagerWorklistPage() {
   return (
     <RoleBasedWorklist
-      role="TECHNICIAN"
+      role="INSTITUTION_MANAGER"
     />
   );
 }
