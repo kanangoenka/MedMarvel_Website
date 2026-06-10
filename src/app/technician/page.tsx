@@ -88,16 +88,14 @@ Total Files: ${totalFiles}`
               Upload and manage assigned cases
             </p>
           </div>
+          <button
+          onClick={() => setIsModalOpen(true)}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-medium"
+          >
+            + Add Case
+          </button>
 
-          <CreateCaseModal
-            doctors={doctors}
-            onCreate={(data) =>
-              setCases([
-                data,
-                ...cases,
-              ])
-            }
-          />
+          
         </div>
       </div>
 
