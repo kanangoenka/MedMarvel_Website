@@ -2,48 +2,23 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
-import {
-  LayoutDashboard,
-  Bell,
-  User,
-  LogOut,
-  Menu,
-} from "lucide-react";
+import { sidebarConfig } from "./sidebar-config";
+import { Menu } from "lucide-react";
 
 type SidebarProps = {
+  role: keyof typeof sidebarConfig;
   collapsed: boolean;
   setCollapsed: (value: boolean) => void;
 };
 
-export default function Sidebar({
+export default function RoleSidebar({
+  role,
   collapsed,
   setCollapsed,
 }: SidebarProps) {
   const pathname = usePathname();
 
-  const menuItems = [
-    {
-      label: "Dashboard",
-      href: "/client/dashboard",
-      icon: LayoutDashboard,
-    },
-    {
-      label: "Notifications",
-      href: "/client/notifications",
-      icon: Bell,
-    },
-    {
-      label: "Profile",
-      href: "/client/profile",
-      icon: User,
-    },
-    {
-      label: "Logout",
-      href: "/logout",
-      icon: LogOut,
-    },
-  ];
+  const menuItems = sidebarConfig[role];
 
   return (
     <div
