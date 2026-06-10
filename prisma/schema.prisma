@@ -45,6 +45,8 @@ model Site {
 
   institution Institution @relation(fields: [institutionId], references: [id])
 
+  operationHeadAssignments OperationHeadSiteAssignment[]
+
   users   User[]
   studies Study[]
 
@@ -77,9 +79,13 @@ model User {
 
   operatorStudies Study[] @relation("OperatorStudies")
 
+  uploadedStudies Study[] @relation("UploadedStudies")
+
+  operationHeadAssignments OperationHeadSiteAssignment[] @relation("OperationHeadAssignments")
+
   comments StudyComment[]
 
-  operatorAssignments OperatorSiteAssignment[]
+  operatorAssignments OperatorSiteAssignment[] @relation("OperatorAssignments")
 }
 
 model OperatorSiteAssignment {
@@ -90,11 +96,26 @@ model OperatorSiteAssignment {
 
   createdAt DateTime @default(now())
 
-  operator User @relation(fields: [operatorId], references: [id])
+  operator User @relation("OperatorAssignments", fields: [operatorId], references: [id])
 
   site Site @relation(fields: [siteId], references: [id])
 
   @@unique([operatorId, siteId])
+}
+
+model OperationHeadSiteAssignment {
+  id String @id @default(cuid())
+
+  operationHeadId String
+  siteId          String
+
+  createdAt DateTime @default(now())
+
+  operationHead User @relation("OperationHeadAssignments", fields: [operationHeadId], references: [id])
+
+  site Site @relation(fields: [siteId], references: [id])
+
+  @@unique([operationHeadId, siteId])
 }
 
 model Patient {
@@ -121,8 +142,10 @@ model Study {
   patientId String?
   siteId    String
 
-  technicianId String
+  technicianId String?
   doctorId     String
+
+  uploadedById String
 
   operatorId String?
 
@@ -135,17 +158,24 @@ model Study {
 
   site Site @relation(fields: [siteId], references: [id])
 
-  technician User @relation("TechnicianStudies", fields: [technicianId], references: [id])
+  technician User? @relation("TechnicianStudies", fields: [technicianId], references: [id])
 
   doctor User @relation("DoctorStudies", fields: [doctorId], references: [id])
 
   operator User? @relation("OperatorStudies", fields: [operatorId], references: [id])
+
+  uploadedBy User @relation("UploadedStudies", fields: [uploadedById], references: [id])
 
   files StudyFile[]
 
   report Report?
 
   comments StudyComment[]
+
+  @@index([siteId])
+  @@index([doctorId])
+  @@index([technicianId])
+  @@index([uploadedById])
 }
 
 model StudyFile {
