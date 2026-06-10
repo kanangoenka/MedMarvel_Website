@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 import { hashPassword } from "@/lib/hash";
 
 import { getCurrentUser } from "@/lib/current-user";
-import { canCreateOperationHead } from "@/lib/permissions";
+import { canCreateSiteAdmin } from "@/lib/permissions";
 
 import { UserRole } from "@prisma/client";
 
@@ -15,27 +15,19 @@ export async function POST(req: Request) {
 
     if (!currentUser) {
       return NextResponse.json(
-        {
-          error: "Unauthorized",
-        },
-        {
-          status: 401,
-        }
+        { error: "Unauthorized" },
+        { status: 401 }
       );
     }
 
     if (
-      !canCreateOperationHead(
+      !canCreateSiteAdmin(
         currentUser.role
       )
     ) {
       return NextResponse.json(
-        {
-          error: "Forbidden",
-        },
-        {
-          status: 403,
-        }
+        { error: "Forbidden" },
+        { status: 403 }
       );
     }
 
@@ -45,13 +37,14 @@ export async function POST(req: Request) {
       name,
       email,
       password,
-      siteIds,
+      siteId,
     } = body;
 
     if (
       !name ||
       !email ||
-      !password
+      !password ||
+      !siteId
     ) {
       return NextResponse.json(
         {
@@ -83,63 +76,58 @@ export async function POST(req: Request) {
       );
     }
 
+    const site =
+      await prisma.site.findUnique({
+        where: {
+          id: siteId,
+        },
+      });
+
+    if (!site) {
+      return NextResponse.json(
+        {
+          error: "Site not found",
+        },
+        {
+          status: 404,
+        }
+      );
+    }
+
     const hashedPassword =
       await hashPassword(
         password
       );
 
-    const result =
-      await prisma.$transaction(
-        async (tx) => {
-          const operationHead =
-            await tx.user.create({
-              data: {
-                name: name.trim(),
+    const siteAdmin =
+      await prisma.user.create({
+        data: {
+          name: name.trim(),
 
-                email: email
-                  .trim()
-                  .toLowerCase(),
+          email: email
+            .trim()
+            .toLowerCase(),
 
-                password:
-                  hashedPassword,
+          password:
+            hashedPassword,
 
-                role:
-                  UserRole.OPERATION_HEAD,
-              },
-            });
+          role:
+            UserRole.SITE_ADMIN,
 
-          if (
-            siteIds &&
-            Array.isArray(siteIds)
-          ) {
-            await tx.operationHeadSiteAssignment.createMany(
-              {
-                data:
-                  siteIds.map(
-                    (
-                      siteId: string
-                    ) => ({
-                      operationHeadId:
-                        operationHead.id,
+          siteId: site.id,
 
-                      siteId,
-                    })
-                  ),
-              }
-            );
-          }
-
-          return operationHead;
-        }
-      );
+          institutionId:
+            site.institutionId,
+        },
+      });
 
     return NextResponse.json({
       success: true,
 
       user: {
-        id: result.id,
-        name: result.name,
-        email: result.email,
+        id: siteAdmin.id,
+        name: siteAdmin.name,
+        email: siteAdmin.email,
       },
     });
   } catch (error) {
@@ -148,7 +136,7 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         error:
-          "Failed to create operation head",
+          "Failed to create site admin",
       },
       {
         status: 500,

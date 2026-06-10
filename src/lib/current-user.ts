@@ -20,17 +20,15 @@ export async function getCurrentUser() {
     return null;
   }
 
-  const user =
-    await prisma.user.findUnique({
-      where: {
-        id: payload.userId as string,
-      },
-      include: {
-        site: true,
-        assignedDoctors: true,
-        institution: true,
-      },
-    });
+  const user = await prisma.user.findUnique({
+  where: {
+    id: payload.userId as string,
+  },
+  include: {
+    site: true,
+    institution: true,
+  },
+});
 
   return user;
 }
