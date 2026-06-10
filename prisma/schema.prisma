@@ -17,11 +17,20 @@ model Institution {
 }
 
 model Site {
-  id                  String                   @id @default(cuid())
-  name                String
-  institutionId       String
-  isActive            Boolean                  @default(true)
-  createdAt           DateTime                 @default(now())
+  id            String @id @default(cuid())
+  name          String
+  institutionId String
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+
+  institution Institution @relation(fields: [institutionId], references: [id])
+
+
+  users   User[]
+  studies Study[]
+
   operatorAssignments OperatorSiteAssignment[]
   institution         Institution              @relation(fields: [institutionId], references: [id])
   studies             Study[]
@@ -29,15 +38,37 @@ model Site {
 }
 
 model User {
-  id                  String                   @id @default(cuid())
-  name                String
-  email               String                   @unique
-  password            String
-  role                UserRole
-  institutionId       String?
-  siteId              String?
-  isActive            Boolean                  @default(true)
-  createdAt           DateTime                 @default(now())
+  id String @id @default(cuid())
+
+  name     String
+  email    String @unique
+  password String
+
+  role UserRole
+
+  institutionId String?
+  siteId        String?
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+
+  institution Institution? @relation(fields: [institutionId], references: [id])
+
+  site Site? @relation(fields: [siteId], references: [id])
+
+  technicianStudies Study[] @relation("TechnicianStudies")
+
+  doctorStudies Study[] @relation("DoctorStudies")
+
+  operatorStudies Study[] @relation("OperatorStudies")
+
+  uploadedStudies Study[] @relation("UploadedStudies")
+
+  
+
+  comments StudyComment[]
+
   operatorAssignments OperatorSiteAssignment[] @relation("OperatorAssignments")
   doctorStudies       Study[]                  @relation("DoctorStudies")
   operatorStudies     Study[]                  @relation("OperatorStudies")
@@ -58,6 +89,7 @@ model OperatorSiteAssignment {
 
   @@unique([operatorId, siteId])
 }
+
 
 model Patient {
   id          String   @id @default(cuid())
@@ -143,7 +175,7 @@ enum StudyStatus {
   PROCESSING
   READY
 }
-
+<<<<<<<<< Temporary merge branch 1
 
 model Institution {
   id        String   @id @default(cuid())
@@ -325,4 +357,5 @@ model StudyComment {
 
   user User @relation(fields: [userId], references: [id])
 }
-
+=========
+>>>>>>>>> Temporary merge branch 2
