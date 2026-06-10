@@ -13,6 +13,11 @@ export async function POST(req: Request) {
     const currentUser =
       await getCurrentUser();
 
+
+      console.log("CURRENT USER");
+console.log(currentUser);
+console.log("ROLE:", currentUser.role);
+
     if (!currentUser) {
       return NextResponse.json(
         {
