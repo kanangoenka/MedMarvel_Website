@@ -436,7 +436,10 @@ export default function RoleBasedWorklist({
 
   return (
     <div className="space-y-6">
-      <WorklistToolbar onAddCase={() => setShowModal(true)} />
+      <WorklistToolbar
+  role={role}
+  onAddCase={() => setShowModal(true)}
+/>
 
       {/* WORKLIST */}
       <div className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(15,23,42,0.04)] border border-gray-100 overflow-hidden">
