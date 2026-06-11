@@ -42,6 +42,9 @@ export default function RoleBasedWorklist({
   // Current doctor info
   const [currentUser, setCurrentUser] = useState<any>(null);
 
+  const [doctors, setDoctors] = useState<any[]>([]);
+const [doctorId, setDoctorId] = useState("");
+
   // COMMENTS STATES
   const [showCommentsModal, setShowCommentsModal] = useState(false);
   const [selectedStudyId, setSelectedStudyId] = useState<string | null>(null);
@@ -104,7 +107,7 @@ export default function RoleBasedWorklist({
   // =========================
   async function fetchStudies() {
     try {
-      const response = await fetch("/api/studies");
+      const response = await fetch("/api/worklist");
 
       if (response.status === 401) {
         router.push("/login");
@@ -196,6 +199,30 @@ export default function RoleBasedWorklist({
 
     return matchesSearch && matchesStatus;
   });
+
+
+
+  async function fetchDoctors() {
+  try {
+    const response = await fetch("/api/doctors");
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch doctors");
+    }
+
+    const data = await response.json();
+
+    setDoctors(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+useEffect(() => {
+  if (role === "TECHNICIAN") {
+    fetchDoctors();
+  }
+}, [role]);
 
   // =========================
   // FETCH COMMENTS
@@ -354,6 +381,7 @@ export default function RoleBasedWorklist({
             studyDescription,
             modality: selectedModalities.join(", "),
             imagingLink,
+            doctorId,
           }),
         });
 
@@ -686,6 +714,9 @@ export default function RoleBasedWorklist({
         loading={loading}
         assignedDoctorName={currentUser?.name}
         existingFiles={existingFiles}
+        doctors={doctors}
+doctorId={doctorId}
+setDoctorId={setDoctorId}
       />
 
       {/* COMMENTS MODAL */}
