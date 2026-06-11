@@ -40,6 +40,16 @@ interface AddCaseModalProps {
     reportUrl: string;
     setReportUrl: (val: string) => void;
 
+    
+
+    doctors: {
+    id: string;
+    name: string;
+}[];
+
+doctorId: string;
+setDoctorId: (val: string) => void;
+
     // Files states
     mriFile: File[];
     setmriFile: (val: File[]) => void;
@@ -92,6 +102,9 @@ export default function AddCaseModal({
     setStudyDescription,
     reportUrl,
     setReportUrl,
+    doctors,
+doctorId,
+setDoctorId,
     role,
     mriFile,
     setmriFile,
@@ -164,20 +177,34 @@ export default function AddCaseModal({
                     </div>
                 )}
                 {role === "TECHNICIAN" && (
-                    <div className="mx-6 mt-3">
-                        <label className="block text-sm font-medium mb-2">
-                            Assign Doctor
-                        </label>
-                        <select
-                        className="w-full border rounded-xl px-4 py-3"
-                        >
-                            <option>Select Doctor</option>
-                            <option>Dr. Sharma</option>
-                            <option>Dr. Patel</option>
-                            <option>Dr. Joshi</option>
-                        </select>
-                    </div>
-                )}
+    <div className="mx-6 mt-3">
+        <label className="block text-sm font-medium mb-2">
+            Assign Doctor
+        </label>
+
+        <select
+            value={doctorId}
+            onChange={(e) =>
+                setDoctorId(e.target.value)
+            }
+            className="w-full border rounded-xl px-4 py-3"
+        >
+            <option value="">
+                Select Doctor
+            </option>
+
+            {doctors.map((doctor) => (
+                <option
+                    key={doctor.id}
+                    value={doctor.id}
+                >
+                    {doctor.name}
+                </option>
+            ))}
+        </select>
+    </div>
+)}
+                      
 
                 {/* 2-Column Layout: Left = Patient + Modalities | Right = Report + Documents */}
                 <div className="px-6 py-4 grid grid-cols-2 gap-5 bg-[#fcfcfd]">
