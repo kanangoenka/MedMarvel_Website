@@ -157,3 +157,187 @@ enum StudyStatus {
   PROCESSING
   READY
 }
+<<<<<<<<< Temporary merge branch 1
+
+model Institution {
+  id        String   @id @default(cuid())
+  name      String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  sites Site[]
+  users User[]
+}
+
+model Site {
+  id            String @id @default(cuid())
+  name          String
+  institutionId String
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+
+  institution Institution @relation(fields: [institutionId], references: [id])
+
+
+  users   User[]
+  studies Study[]
+
+  operatorAssignments OperatorSiteAssignment[]
+}
+
+model User {
+  id String @id @default(cuid())
+
+  name     String
+  email    String @unique
+  password String
+
+  role UserRole
+
+  institutionId String?
+  siteId        String?
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+
+  institution Institution? @relation(fields: [institutionId], references: [id])
+
+  site Site? @relation(fields: [siteId], references: [id])
+
+  technicianStudies Study[] @relation("TechnicianStudies")
+
+  doctorStudies Study[] @relation("DoctorStudies")
+
+  operatorStudies Study[] @relation("OperatorStudies")
+
+  uploadedStudies Study[] @relation("UploadedStudies")
+
+  
+
+  comments StudyComment[]
+
+  operatorAssignments OperatorSiteAssignment[] @relation("OperatorAssignments")
+}
+
+model OperatorSiteAssignment {
+  id String @id @default(cuid())
+
+  operatorId String
+  siteId     String
+
+  createdAt DateTime @default(now())
+
+  operator User @relation("OperatorAssignments", fields: [operatorId], references: [id])
+
+  site Site @relation(fields: [siteId], references: [id])
+
+  @@unique([operatorId, siteId])
+}
+
+
+model Patient {
+  id String @id @default(cuid())
+
+  patientId   String
+  patientName String
+
+  createdAt DateTime @default(now())
+
+  studies Study[]
+}
+
+model Study {
+  id String @id @default(cuid())
+
+  caseNumber String @unique
+
+  studyDescription String?
+  modality         String?
+
+  status StudyStatus @default(UPLOADED)
+
+  patientId String?
+  siteId    String
+
+  technicianId String?
+  doctorId     String
+
+  uploadedById String
+
+  operatorId String?
+
+  imagingLink String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  patient Patient? @relation(fields: [patientId], references: [id])
+
+  site Site @relation(fields: [siteId], references: [id])
+
+  technician User? @relation("TechnicianStudies", fields: [technicianId], references: [id])
+
+  doctor User @relation("DoctorStudies", fields: [doctorId], references: [id])
+
+  operator User? @relation("OperatorStudies", fields: [operatorId], references: [id])
+
+  uploadedBy User @relation("UploadedStudies", fields: [uploadedById], references: [id])
+
+  files StudyFile[]
+
+  report Report?
+
+  comments StudyComment[]
+
+  @@index([siteId])
+  @@index([doctorId])
+  @@index([technicianId])
+  @@index([uploadedById])
+}
+
+model StudyFile {
+  id String @id @default(cuid())
+
+  studyId String
+
+  fileName   String
+  fileUrl    String
+  fileType   String
+  folderPath String?
+
+  createdAt DateTime @default(now())
+
+  study Study @relation(fields: [studyId], references: [id])
+}
+
+model Report {
+  id String @id @default(cuid())
+
+  studyId String @unique
+
+  reportUrl String
+
+  uploadedAt DateTime @default(now())
+
+  study Study @relation(fields: [studyId], references: [id])
+}
+
+model StudyComment {
+  id String @id @default(cuid())
+
+  studyId String
+  userId  String
+
+  message String
+
+  createdAt DateTime @default(now())
+
+  study Study @relation(fields: [studyId], references: [id])
+
+  user User @relation(fields: [userId], references: [id])
+}
+=========
+>>>>>>>>> Temporary merge branch 2
