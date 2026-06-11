@@ -69,6 +69,7 @@ interface AddCaseModalProps {
 
     // Assigned doctor (the logged-in doctor's name — read-only)
     assignedDoctorName?: string;
+    role?: string;
 
     // Existing uploaded files when editing
     existingFiles?: ExistingFile[];
@@ -91,6 +92,7 @@ export default function AddCaseModal({
     setStudyDescription,
     reportUrl,
     setReportUrl,
+    role,
     mriFile,
     setmriFile,
     petFile,
@@ -154,11 +156,26 @@ export default function AddCaseModal({
                 </div>
 
                 {/* ASSIGNED DOCTOR banner (read-only) */}
-                {assignedDoctorName && (
+                {role === "DOCTOR" && assignedDoctorName && (
                     <div className="mx-6 mt-3 flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-xl px-4 py-2.5">
                         <Stethoscope size={14} className="text-blue-600 shrink-0" />
                         <span className="text-[11px] font-bold text-blue-500 uppercase tracking-wider">Assigned Doctor:</span>
                         <span className="text-[12px] font-bold text-blue-800">{assignedDoctorName}</span>
+                    </div>
+                )}
+                {role === "TECHNICIAN" && (
+                    <div className="mx-6 mt-3">
+                        <label className="block text-sm font-medium mb-2">
+                            Assign Doctor
+                        </label>
+                        <select
+                        className="w-full border rounded-xl px-4 py-3"
+                        >
+                            <option>Select Doctor</option>
+                            <option>Dr. Sharma</option>
+                            <option>Dr. Patel</option>
+                            <option>Dr. Joshi</option>
+                        </select>
                     </div>
                 )}
 
