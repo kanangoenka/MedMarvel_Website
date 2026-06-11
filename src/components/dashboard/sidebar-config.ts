@@ -57,7 +57,7 @@ export const sidebarConfig = {
   TECHNICIAN: [
     {
       label: "Worklist",
-      href: "/technician/worklist",
+      href: "/technician",
       icon: ClipboardList,
     },
   ],
@@ -65,7 +65,7 @@ export const sidebarConfig = {
   DOCTOR: [
     {
       label: "Worklist",
-      href: "/doctor/worklist",
+      href: "/doctor",
       icon: ClipboardList,
     },
   ],
@@ -86,7 +86,7 @@ export const sidebarConfig = {
   OPERATOR: [
     {
       label: "Worklist",
-      href: "/operator/worklist",
+      href: "/operator",
       icon: ClipboardList,
     },
   ],

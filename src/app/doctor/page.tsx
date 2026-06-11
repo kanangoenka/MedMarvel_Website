@@ -1,7 +1,9 @@
-export default function Page() {
+import RoleBasedWorklist from "@/components/client-dashboard/RoleBasedWorklist";
+
+export default function DoctorWorklistPage() {
   return (
-    <div className="p-8">
-      <h1>Page Works</h1>
-    </div>
+    <RoleBasedWorklist
+      role="DOCTOR"
+    />
   );
 }
