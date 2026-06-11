@@ -16,6 +16,7 @@ export async function POST(request: Request) {
       studyDescription,
       modality,
       imagingLink,
+      doctorId,
     } = body;
 
     const user = (await getCurrentUser()) as any;
@@ -81,7 +82,9 @@ export async function POST(request: Request) {
 
         siteId: site.id,
 
-        doctorId: user.id,
+       doctorId:
+  doctorId ||
+  user.id,
 
         uploadedById: user.id,
 
@@ -92,6 +95,7 @@ export async function POST(request: Request) {
         patient: true,
         report: true,
         files: true,
+        outputFiles: true,
 
         doctor: {
           select: {
@@ -145,6 +149,7 @@ export async function GET() {
       patient: true,
       report: true,
       files: true,
+      outputFiles: true,
 
       doctor: {
         select: {

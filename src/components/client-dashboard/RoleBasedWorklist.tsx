@@ -16,6 +16,7 @@ import {
   Trash2,
   MessageSquare,
   Download,
+   Upload,
   CheckCircle2,
 } from "lucide-react";
 
@@ -44,6 +45,9 @@ export default function RoleBasedWorklist({
 
   const [doctors, setDoctors] = useState<any[]>([]);
 const [doctorId, setDoctorId] = useState("");
+
+const [uploadingStudyId, setUploadingStudyId] =
+  useState<string | null>(null);
 
   // COMMENTS STATES
   const [showCommentsModal, setShowCommentsModal] = useState(false);
@@ -336,6 +340,51 @@ useEffect(() => {
     }
   }
 
+
+  async function handleOutputFileUpload(
+  studyId: string,
+  file: File
+) {
+  try {
+    const formData = new FormData();
+
+    formData.append(
+      "file",
+      file
+    );
+
+   const response = await fetch(
+  `/api/studies/${studyId}/output-files`,
+  {
+    method: "POST",
+    body: formData,
+  }
+);
+    
+
+    const data =
+      await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.error
+      );
+    }
+
+    await fetchStudies();
+
+    alert(
+      "Report uploaded successfully"
+    );
+  } catch (error) {
+    console.error(error);
+
+    alert(
+      "Failed to upload report"
+    );
+  }
+}
+
   // =========================
   // SUBMIT FUNCTION
   // =========================
@@ -540,6 +589,11 @@ useEffect(() => {
                 <th className="px-6 py-4 text-sm font-semibold text-gray-600">Patient Name</th>
                 <th className="px-6 py-4 text-sm font-semibold text-gray-600">Study Description</th>
                 <th className="px-6 py-4 text-sm font-semibold text-gray-600">Modality</th>
+                {(role === "OPERATOR" || role === "TECHNICIAN") && (
+  <th className="px-6 py-4 text-sm font-semibold text-gray-600">
+    Doctor
+  </th>
+)}
                 <th className="px-6 py-4 text-sm font-semibold text-gray-600">Uploaded Files</th>
                 <th className="px-6 py-4 text-sm font-semibold text-gray-600">Status</th>
                 <th className="px-6 py-4 text-sm font-semibold text-gray-600">Date &amp; Time</th>
@@ -568,6 +622,13 @@ useEffect(() => {
                   <td className="px-6 py-4 text-sm text-gray-700">
                     {study.modality || "-"}
                   </td>
+
+                  {(role === "OPERATOR" ||
+  role === "TECHNICIAN") && (
+  <td className="px-6 py-4 text-sm text-gray-700">
+    {study.doctor?.name || "-"}
+  </td>
+)}
 
                   {/* UPLOADED FILES — " filename" */}
                   <td className="px-6 py-4">
@@ -618,13 +679,15 @@ useEffect(() => {
                         <Eye size={17} className="text-blue-600" />
                       </button>
 
-                      <button
-                        onClick={() => handleEdit(study)}
-                        className="p-2 rounded-lg hover:bg-yellow-50 transition"
-                        title="Edit study"
-                      >
-                        <Pencil size={17} className="text-yellow-600" />
-                      </button>
+                      {role !== "OPERATOR" && (
+  <button
+    onClick={() => handleEdit(study)}
+    className="p-2 rounded-lg hover:bg-yellow-50 transition"
+    title="Edit study"
+  >
+    <Pencil size={17} className="text-yellow-600" />
+  </button>
+)}
 
                       <button
                         onClick={() => openComments(study.id)}
@@ -634,30 +697,85 @@ useEffect(() => {
                         <MessageSquare size={17} className="text-purple-600" />
                       </button>
 
-                      <button
-                        disabled={!study.report}
-                        onClick={() => {
-                          if (study.report?.reportUrl) {
-                            window.open(study.report.reportUrl, "_blank");
-                          }
-                        }}
-                        title={study.report ? "Download report" : "No report available"}
-                        className={`p-2 rounded-lg transition ${
-                          study.report
-                            ? "hover:bg-green-50"
-                            : "opacity-40 cursor-not-allowed"
-                        }`}
-                      >
-                        <Download size={17} className="text-green-600" />
-                      </button>
 
-                      <button
-                        onClick={() => handleDelete(study.id)}
-                        className="p-2 rounded-lg hover:bg-red-50 transition"
-                        title="Delete study"
-                      >
-                        <Trash2 size={17} className="text-red-600" />
-                      </button>
+                      {role === "OPERATOR" ? (
+  <>
+    <input
+      type="file"
+      multiple
+      id={`upload-${study.id}`}
+      className="hidden"
+      onChange={async (e) => {
+        const files = Array.from(
+          e.target.files || []
+        );
+
+        for (const file of files) {
+          await handleOutputFileUpload(
+            study.id,
+            file
+          );
+        }
+      }}
+    />
+
+    <button
+      onClick={() => {
+        document
+          .getElementById(
+            `upload-${study.id}`
+          )
+          ?.click();
+      }}
+      className="p-2 rounded-lg hover:bg-green-50 transition"
+      title="Upload Output Files"
+    >
+      <Upload
+        size={17}
+        className="text-green-600"
+      />
+    </button>
+  </>
+) : (
+  <button
+    disabled={!study.report}
+    onClick={() => {
+      if (study.report?.reportUrl) {
+        window.open(
+          study.report.reportUrl,
+          "_blank"
+        );
+      }
+    }}
+    title={
+      study.report
+        ? "Download report"
+        : "No report available"
+    }
+    className={`p-2 rounded-lg transition ${
+      study.report
+        ? "hover:bg-green-50"
+        : "opacity-40 cursor-not-allowed"
+    }`}
+  >
+    <Download
+      size={17}
+      className="text-green-600"
+    />
+  </button>
+)}
+
+                     
+
+                      {role !== "OPERATOR" && (
+  <button
+    onClick={() => handleDelete(study.id)}
+    className="p-2 rounded-lg hover:bg-red-50 transition"
+    title="Delete study"
+  >
+    <Trash2 size={17} className="text-red-600" />
+  </button>
+)}
                     </div>
                   </td>
                 </tr>

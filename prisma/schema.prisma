@@ -91,6 +91,7 @@ model Study {
   uploadedBy       User           @relation("UploadedStudies", fields: [uploadedById], references: [id])
   comments         StudyComment[]
   files            StudyFile[]
+  outputFiles      StudyOutputFile[]
 
   @@index([siteId])
   @@index([doctorId])
@@ -99,14 +100,36 @@ model Study {
 }
 
 model StudyFile {
-  id         String   @id @default(cuid())
+  id         String       @id @default(cuid())
   studyId    String
+
   fileName   String
   fileUrl    String
   fileType   String
+
+  category   FileCategory @default(INPUT)
+
   folderPath String?
+
   createdAt  DateTime @default(now())
-  study      Study    @relation(fields: [studyId], references: [id])
+
+  study      Study @relation(fields: [studyId], references: [id])
+}
+
+model StudyOutputFile {
+  id         String   @id @default(cuid())
+
+  studyId    String
+
+  fileName   String
+  fileUrl    String
+  fileType   String
+
+  uploadedAt DateTime @default(now())
+
+  study Study @relation(fields: [studyId], references: [id])
+
+  @@index([studyId])
 }
 
 model Report {
@@ -142,4 +165,10 @@ enum StudyStatus {
   ASSIGNED
   PROCESSING
   READY
+}
+
+enum FileCategory {
+  INPUT
+  OUTPUT
+  REPORT
 }
