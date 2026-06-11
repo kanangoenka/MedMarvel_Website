@@ -210,7 +210,7 @@ const [doctorId, setDoctorId] = useState("");
     ),
   ];
 
-  const doctors = [
+  const doctorsOptions = [
     "All",
     ...new Set(
       studies.map((study) => study.doctor?.name)
@@ -655,7 +655,7 @@ useEffect(() => {
         }
         className="border rounded-xl px-4 py-2"
       >
-        {doctors.map((doctor) => (
+        {doctorsOptions.map((doctor) => (
           <option
             key={doctor}
             value={doctor}
