@@ -641,6 +641,7 @@ export default function RoleBasedWorklist({
 
       {/* ADD / EDIT MODAL */}
       <AddCaseModal
+        role={role}
         isOpen={showModal}
         onClose={() => {
           setShowModal(false);
