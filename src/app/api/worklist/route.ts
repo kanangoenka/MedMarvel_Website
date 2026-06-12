@@ -58,7 +58,7 @@ export async function GET() {
 
       case "OPERATION_HEAD": {
         const assignments =
-          await prisma.operationHeadSiteAssignment.findMany(
+          await prisma.operatorSiteAssignment.findMany(
             {
               where: {
                 operationHeadId:

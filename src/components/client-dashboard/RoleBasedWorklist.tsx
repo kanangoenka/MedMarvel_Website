@@ -122,7 +122,11 @@ const [uploadingStudyId, setUploadingStudyId] =
       }
 
       if (!response.ok) {
-        throw new Error("API failed");
+        console.log(await response.text());
+
+throw new Error(
+  `API failed (${response.status})`
+);
       }
 
       const data = await response.json();
