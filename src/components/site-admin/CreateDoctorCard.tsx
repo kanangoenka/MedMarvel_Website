@@ -2,7 +2,13 @@
 
 import { useState } from "react";
 
-export default function CreateDoctorCard() {
+type CreateDoctorCardProps = {
+  onSuccess?: () => void;
+};
+
+export default function CreateDoctorCard({
+  onSuccess,
+}: CreateDoctorCardProps) {
   const [name, setName] =
     useState("");
 
@@ -49,13 +55,11 @@ export default function CreateDoctorCard() {
         return;
       }
 
-      alert(
-        "Doctor created successfully"
-      );
-
       setName("");
-      setEmail("");
-      setPassword("");
+setEmail("");
+setPassword("");
+
+onSuccess?.();
 
     } catch (error) {
       console.error(error);

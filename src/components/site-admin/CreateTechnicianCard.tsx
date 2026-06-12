@@ -2,7 +2,13 @@
 
 import { useState } from "react";
 
-export default function CreateTechnicianCard() {
+type CreateTechnicianCardProps = {
+  onSuccess?: () => void;
+};
+
+export default function CreateTechnicianCard({
+  onSuccess,
+}: CreateTechnicianCardProps) {
   const [name, setName] =
     useState("");
 
@@ -49,9 +55,7 @@ export default function CreateTechnicianCard() {
         return;
       }
 
-      alert(
-        "Technician created successfully"
-      );
+      onSuccess?.();
 
       setName("");
       setEmail("");

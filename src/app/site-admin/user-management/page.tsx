@@ -17,39 +17,40 @@ export default function CreationPage() {
   const [technicianOpen, setTechnicianOpen] = useState(false);
   const [doctors, setDoctors] = useState<any[]>([]);
   const [technicians, setTechnicians] = useState<any[]>([]);
-useEffect(() => {
+
+
   async function fetchData() {
-    try {
-      const doctorsResponse =
-        await fetch(
-          "/api/site-admin/doctors"
-        );
+  try {
+    const doctorsResponse =
+      await fetch(
+        "/api/site-admin/doctors"
+      );
 
-      if (doctorsResponse.ok) {
-        const doctorsData =
-          await doctorsResponse.json();
+    if (doctorsResponse.ok) {
+      const doctorsData =
+        await doctorsResponse.json();
 
-        setDoctors(doctorsData);
-      }
-
-      const techniciansResponse =
-        await fetch(
-          "/api/site-admin/technicians"
-        );
-
-      if (techniciansResponse.ok) {
-        const techniciansData =
-          await techniciansResponse.json();
-
-        setTechnicians(
-          techniciansData
-        );
-      }
-    } catch (error) {
-      console.error(error);
+      setDoctors(doctorsData);
     }
-  }
 
+    const techniciansResponse =
+      await fetch(
+        "/api/site-admin/technicians"
+      );
+
+    if (techniciansResponse.ok) {
+      const techniciansData =
+        await techniciansResponse.json();
+
+      setTechnicians(
+        techniciansData
+      );
+    }
+  } catch (error) {
+    console.error(error);
+  }
+}
+useEffect(() => {
   fetchData();
 }, []);
 
@@ -158,17 +159,52 @@ useEffect(() => {
     </button>
 
     <button
-      className="
-        px-3 py-1
-        rounded-lg
-        bg-red-100
-        text-red-700
-        text-xs
-        font-medium
-      "
-    >
-      Delete
-    </button>
+  onClick={async () => {
+    const confirmed = window.confirm(
+      `Delete ${doctor.name}?`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      const response = await fetch(
+        `/api/site-admin/delete-doctor/${doctor.id}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      const data =
+        await response.json();
+
+      if (!response.ok) {
+        alert(
+          data.error ||
+            "Failed to delete doctor"
+        );
+        return;
+      }
+
+      fetchData();
+    } catch (error) {
+      console.error(error);
+
+      alert(
+        "Failed to delete doctor"
+      );
+    }
+  }}
+  className="
+    px-3 py-1
+    rounded-lg
+    bg-red-100
+    text-red-700
+    text-xs
+    font-medium
+  "
+>
+  Delete
+</button>
   </div>
 </td>
       </tr>
@@ -269,17 +305,52 @@ useEffect(() => {
     </button>
 
     <button
-      className="
-        px-3 py-1
-        rounded-lg
-        bg-red-100
-        text-red-700
-        text-xs
-        font-medium
-      "
-    >
-      Delete
-    </button>
+  onClick={async () => {
+    const confirmed = window.confirm(
+      `Delete ${technician.name}?`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      const response = await fetch(
+        `/api/site-admin/delete-technician/${technician.id}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      const data =
+        await response.json();
+
+      if (!response.ok) {
+        alert(
+          data.error ||
+            "Failed to delete technician"
+        );
+        return;
+      }
+
+      fetchData();
+    } catch (error) {
+      console.error(error);
+
+      alert(
+        "Failed to delete technician"
+      );
+    }
+  }}
+  className="
+    px-3 py-1
+    rounded-lg
+    bg-red-100
+    text-red-700
+    text-xs
+    font-medium
+  "
+>
+  Delete
+</button>
   </div>
 </td>
       </tr>
@@ -299,7 +370,13 @@ useEffect(() => {
       >
         <DialogContent className="max-w-2xl">
 
-          <CreateDoctorCard />
+          <CreateDoctorCard
+  onSuccess={() => {
+    setDoctorOpen(false);
+
+    fetchData();
+  }}
+/>
         </DialogContent>
       </Dialog>
 
@@ -309,7 +386,13 @@ useEffect(() => {
       >
         <DialogContent className="max-w-2xl">
 
-          <CreateTechnicianCard />
+          <CreateTechnicianCard
+  onSuccess={() => {
+    setTechnicianOpen(false);
+
+    fetchData();
+  }}
+/>
         </DialogContent>
       </Dialog>
 
