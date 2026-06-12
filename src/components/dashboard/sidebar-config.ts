@@ -48,8 +48,8 @@ export const sidebarConfig = {
       icon: ClipboardList,
     },
     {
-      label: "Creation",
-      href: "/site-admin/creation",
+      label: "User Management",
+      href: "/site-admin/user-management",
       icon: PlusCircle,
     },
   ],

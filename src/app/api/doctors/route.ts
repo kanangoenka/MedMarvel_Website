@@ -6,6 +6,7 @@ export async function GET() {
   try {
     const currentUser =
       await getCurrentUser();
+      console.log(currentUser);
 
     if (!currentUser) {
       return NextResponse.json(

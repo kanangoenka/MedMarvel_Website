@@ -95,7 +95,6 @@ export async function POST(request: Request) {
         patient: true,
         report: true,
         files: true,
-        outputFiles: true,
 
         doctor: {
           select: {
@@ -149,7 +148,6 @@ export async function GET() {
       patient: true,
       report: true,
       files: true,
-      outputFiles: true,
 
       doctor: {
         select: {
