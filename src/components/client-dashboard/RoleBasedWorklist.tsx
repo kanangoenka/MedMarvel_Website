@@ -87,10 +87,10 @@ const [uploadingStudyId, setUploadingStudyId] =
   const [studies, setStudies] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
-  const [institutionFilter, setInstitutionFilter] = useState("All");
-  const [siteFilter, setSiteFilter] = useState("All");
-  const [doctorFilter, setDoctorFilter] = useState("All");
-  const [technicianFilter, setTechnicianFilter] = useState("All");
+  const [institutionFilter, setInstitutionFilter] = useState("ALL");
+  const [siteFilter, setSiteFilter] = useState("ALL");
+  const [doctorFilter, setDoctorFilter] = useState("ALL");
+  const [technicianFilter, setTechnicianFilter] = useState("ALL");
   // =========================
   // FETCH CURRENT USER
   // =========================
@@ -195,7 +195,7 @@ const [uploadingStudyId, setUploadingStudyId] =
   }, []);
 
   const institutions = [
-    "All",
+    "ALL",
     ...new Set(
       studies.map(
         (study) => study.site?.institution?.name
@@ -205,7 +205,7 @@ const [uploadingStudyId, setUploadingStudyId] =
   ];
   
   const sites = [
-    "All",
+    "ALL",
     ...new Set(
       studies.map(
         (study) => study.site?.name
@@ -215,7 +215,7 @@ const [uploadingStudyId, setUploadingStudyId] =
   ];
 
   const doctorsOptions = [
-    "All",
+    "ALL",
     ...new Set(
       studies.map((study) => study.doctor?.name)
       .filter(Boolean)
@@ -223,7 +223,7 @@ const [uploadingStudyId, setUploadingStudyId] =
   ];
 
   const technicians = [
-    "All",
+    "ALL",
     ...new Set(
       studies.map((study) => study.technician?.name)
       .filter(Boolean)
@@ -241,26 +241,26 @@ const [uploadingStudyId, setUploadingStudyId] =
         );
 
     const matchesStatus =
-      statusFilter === "All" ||
-      study.status === statusFilter;
+  statusFilter === "ALL" ||
+  study.status === statusFilter;
 
     const matchesInstitution =
-      institutionFilter === "All" ||
+      institutionFilter === "ALL" ||
       study.site?.institution?.name ===
         institutionFilter;
 
     const matchesSite =
-      siteFilter === "All" ||
+      siteFilter === "ALL" ||
       study.site?.name ===
         siteFilter;
     
     const matchesDoctor =
-      doctorFilter === "All" ||
+      doctorFilter === "ALL" ||
       study.doctor?.name === 
         doctorFilter;
 
     const matchesTechnician =
-      technicianFilter === "All" ||
+      technicianFilter === "ALL" ||
       study.technician?.name === 
         technicianFilter;
 
