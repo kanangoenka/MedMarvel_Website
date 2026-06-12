@@ -910,8 +910,50 @@ useEffect(() => {
                       </button>
 
 
+
                       {role === "OPERATOR" ? (
   <>
+    {/* DOWNLOAD INPUT FILES */}
+    <button
+      disabled={!study.files?.length}
+      title={
+        study.files?.length
+          ? "Download Uploaded Files"
+          : "No files uploaded"
+      }
+      onClick={() => {
+        study.files.forEach((file: any) => {
+          const link =
+            document.createElement("a");
+
+          link.href = file.fileUrl;
+          link.download =
+            file.fileName;
+
+          document.body.appendChild(
+            link
+          );
+
+          link.click();
+
+          document.body.removeChild(
+            link
+          );
+        });
+      }}
+      className={`p-2 rounded-lg transition ${
+        study.files?.length
+          ? "hover:bg-green-50"
+          : "opacity-40 cursor-not-allowed"
+      }`}
+    >
+      <Download
+        size={17}
+        className="text-green-600"
+      />
+    </button>
+
+    {/* UPLOAD OUTPUT FILES */}
     <input
       type="file"
       multiple
@@ -949,6 +991,10 @@ useEffect(() => {
     </button>
   </>
 ) : (
+
+
+                      
+  
   <button
     disabled={!study.report}
     onClick={() => {
