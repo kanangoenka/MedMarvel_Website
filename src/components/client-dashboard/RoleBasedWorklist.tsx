@@ -87,7 +87,10 @@ const [uploadingStudyId, setUploadingStudyId] =
   const [studies, setStudies] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
-
+  const [institutionFilter, setInstitutionFilter] = useState("All");
+  const [siteFilter, setSiteFilter] = useState("All");
+  const [doctorFilter, setDoctorFilter] = useState("All");
+  const [technicianFilter, setTechnicianFilter] = useState("All");
   // =========================
   // FETCH CURRENT USER
   // =========================
@@ -191,17 +194,84 @@ const [uploadingStudyId, setUploadingStudyId] =
     fetchStudies();
   }, []);
 
-  const filteredStudies = studies.filter((study) => {
+  const institutions = [
+    "All",
+    ...new Set(
+      studies.map(
+        (study) => study.site?.institution?.name
+      )
+      .filter(Boolean)
+    ),
+  ];
+  
+  const sites = [
+    "All",
+    ...new Set(
+      studies.map(
+        (study) => study.site?.name
+      )
+      .filter(Boolean)
+    ),
+  ];
+
+  const doctorsOptions = [
+    "All",
+    ...new Set(
+      studies.map((study) => study.doctor?.name)
+      .filter(Boolean)
+    ),
+  ];
+
+  const technicians = [
+    "All",
+    ...new Set(
+      studies.map((study) => study.technician?.name)
+      .filter(Boolean)
+    ),
+  ];
+
+  const filteredStudies =
+  studies.filter((study) => {
     const matchesSearch =
-      study.patient?.patientName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      study.patient?.patientId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      study.studyDescription?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      study.modality?.toLowerCase().includes(searchTerm.toLowerCase());
+      searchTerm === "" ||
+      study.patient?.patientName
+        ?.toLowerCase()
+        .includes(
+          searchTerm.toLowerCase()
+        );
 
     const matchesStatus =
-      statusFilter === "ALL" ? true : study.status === statusFilter;
+      statusFilter === "All" ||
+      study.status === statusFilter;
 
-    return matchesSearch && matchesStatus;
+    const matchesInstitution =
+      institutionFilter === "All" ||
+      study.site?.institution?.name ===
+        institutionFilter;
+
+    const matchesSite =
+      siteFilter === "All" ||
+      study.site?.name ===
+        siteFilter;
+    
+    const matchesDoctor =
+      doctorFilter === "All" ||
+      study.doctor?.name === 
+        doctorFilter;
+
+    const matchesTechnician =
+      technicianFilter === "All" ||
+      study.technician?.name === 
+        technicianFilter;
+
+    return (
+      matchesSearch &&
+      matchesStatus &&
+      matchesInstitution &&
+      matchesSite &&
+      matchesDoctor &&
+      matchesTechnician
+    );
   });
 
 
@@ -565,7 +635,104 @@ useEffect(() => {
                   {studies.filter((s) => s.status !== "READY").length}
                 </p>
               </div>
+              
+              <div className="flex gap-3">
 
+  {role === "SUPER_ADMIN" && (
+    <>
+      <select
+        value={institutionFilter}
+        onChange={(e) =>
+          setInstitutionFilter(e.target.value)
+        }
+        className="border rounded-xl px-4 py-2"
+      >
+        {institutions.map((institution) => (
+          <option
+            key={institution}
+            value={institution}
+          >
+            {institution}
+          </option>
+        ))}
+      </select>
+
+      <select
+        value={siteFilter}
+        onChange={(e) =>
+          setSiteFilter(e.target.value)
+        }
+        className="border rounded-xl px-4 py-2"
+      >
+        {sites.map((site) => (
+          <option
+            key={site}
+            value={site}
+          >
+            {site}
+          </option>
+        ))}
+      </select>
+    </>
+  )}
+
+  {role === "INSTITUTION_MANAGER" && (
+    <select
+      value={siteFilter}
+      onChange={(e) =>
+        setSiteFilter(e.target.value)
+      }
+      className="border rounded-xl px-4 py-2"
+    >
+      {sites.map((site) => (
+        <option
+          key={site}
+          value={site}
+        >
+          {site}
+        </option>
+      ))}
+    </select>
+  )}
+
+  {role === "SITE_ADMIN" && (
+    <>
+      <select
+        value={doctorFilter}
+        onChange={(e) =>
+          setDoctorFilter(e.target.value)
+        }
+        className="border rounded-xl px-4 py-2"
+      >
+        {doctorsOptions.map((doctor) => (
+          <option
+            key={doctor}
+            value={doctor}
+          >
+            {doctor}
+          </option>
+        ))}
+      </select>
+
+      <select
+        value={technicianFilter}
+        onChange={(e) =>
+          setTechnicianFilter(e.target.value)
+        }
+        className="border rounded-xl px-4 py-2"
+      >
+        {technicians.map((technician) => (
+          <option
+            key={technician}
+            value={technician}
+          >
+            {technician}
+          </option>
+        ))}
+      </select>
+    </>
+  )}
+</div>
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}

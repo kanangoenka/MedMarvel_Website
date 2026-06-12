@@ -105,7 +105,7 @@ export async function POST(request: Request) {
           },
         },
 
-        site: true,
+        site: { include: { institution: true,},},
       },
     });
 
