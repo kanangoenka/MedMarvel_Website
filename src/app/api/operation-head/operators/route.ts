@@ -28,45 +28,33 @@ export async function GET() {
       );
     }
 
-    const assignedSites =
-      await prisma.operationHeadSiteAssignment.findMany(
-        {
-          where: {
-            operationHeadId:
-              currentUser.id,
-          },
-        }
-      );
-
-    const siteIds =
-      assignedSites.map(
-        (site) => site.siteId
-      );
-
     const operators =
-      await prisma.user.findMany({
-        where: {
-          role: "OPERATOR",
+  await prisma.user.findMany({
+    where: {
+      role: "OPERATOR",
+    },
 
-          operatorAssignments: {
-            some: {
-              siteId: {
-                in: siteIds,
-              },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+
+      operatorAssignments: {
+        include: {
+          site: {
+            select: {
+              id: true,
+              name: true,
             },
           },
         },
+      },
+    },
 
-        select: {
-          id: true,
-          name: true,
-          email: true,
-        },
-
-        orderBy: {
-          name: "asc",
-        },
-      });
+    orderBy: {
+      name: "asc",
+    },
+  });
 
     return NextResponse.json(
       operators

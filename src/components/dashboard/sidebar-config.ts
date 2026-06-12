@@ -77,8 +77,8 @@ export const sidebarConfig = {
       icon: LayoutDashboard,
     },
     {
-      label: "Creation",
-      href: "/operation-head/creation",
+      label: "User Management",
+      href: "/operation-head/user-management",
       icon: PlusCircle,
     },
   ],
