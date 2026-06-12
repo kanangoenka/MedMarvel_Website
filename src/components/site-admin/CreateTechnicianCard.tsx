@@ -4,19 +4,33 @@ import { useState } from "react";
 
 type CreateTechnicianCardProps = {
   onSuccess?: () => void;
+
+  initialData?: {
+    id: string;
+    name: string;
+    email: string;
+  };
+
+  mode?: "create" | "edit";
 };
 
 export default function CreateTechnicianCard({
   onSuccess,
+  initialData,
+  mode = "create",
 }: CreateTechnicianCardProps) {
   const [name, setName] =
-    useState("");
+  useState(
+    initialData?.name ?? ""
+  );
 
-  const [email, setEmail] =
-    useState("");
+const [email, setEmail] =
+  useState(
+    initialData?.email ?? ""
+  );
 
-  const [password, setPassword] =
-    useState("");
+const [password, setPassword] =
+  useState("");
 
   const [loading, setLoading] =
     useState(false);
@@ -26,31 +40,46 @@ export default function CreateTechnicianCard({
       setLoading(true);
 
       const response =
-        await fetch(
-          "/api/site-admin/create-technition",
-          {
-            method: "POST",
+  await fetch(
+    mode === "edit"
+      ? `/api/site-admin/update-technician/${initialData?.id}`
+      : "/api/site-admin/create-technician",
+    {
+      method:
+        mode === "edit"
+          ? "PATCH"
+          : "POST",
 
-            headers: {
-              "Content-Type":
-                "application/json",
-            },
+      headers: {
+        "Content-Type":
+          "application/json",
+      },
 
-            body: JSON.stringify({
-              name,
-              email,
-              password,
-            }),
-          }
-        );
+      body: JSON.stringify({
+        name,
+        email,
+        password,
+      }),
+    }
+  );
 
-      const data =
-        await response.json();
+      const text = await response.text();
+console.log("RESPONSE:", text);
+
+if (!response.ok) {
+  console.log("STATUS:", response.status);
+  alert("Request failed");
+  return;
+}
+
+const data = JSON.parse(text);
 
       if (!response.ok) {
         alert(
           data.error ||
-            "Failed to create technician"
+  (mode === "edit"
+    ? "Failed to update technician"
+    : "Failed to create technician")
         );
         return;
       }
@@ -76,7 +105,9 @@ export default function CreateTechnicianCard({
     <div className="bg-white rounded-2xl p-6 shadow">
 
       <h2 className="text-lg font-bold mb-4">
-        Create Technician
+        {mode === "edit"
+  ? "Edit Technician"
+  : "Create Technician"}
       </h2>
 
       <div className="space-y-3">
@@ -117,8 +148,12 @@ export default function CreateTechnicianCard({
           className="w-full bg-[#071739] text-white rounded-xl p-3"
         >
           {loading
-            ? "Creating..."
-            : "Create Technician"}
+  ? mode === "edit"
+    ? "Saving..."
+    : "Creating..."
+  : mode === "edit"
+  ? "Save Changes"
+  : "Create Technician"}
         </button>
 
       </div>

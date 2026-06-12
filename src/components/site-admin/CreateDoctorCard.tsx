@@ -4,19 +4,33 @@ import { useState } from "react";
 
 type CreateDoctorCardProps = {
   onSuccess?: () => void;
+
+  initialData?: {
+    id: string;
+    name: string;
+    email: string;
+  };
+
+  mode?: "create" | "edit";
 };
 
 export default function CreateDoctorCard({
   onSuccess,
+  initialData,
+  mode = "create",
 }: CreateDoctorCardProps) {
   const [name, setName] =
-    useState("");
+  useState(
+    initialData?.name ?? ""
+  );
 
-  const [email, setEmail] =
-    useState("");
+const [email, setEmail] =
+  useState(
+    initialData?.email ?? ""
+  );
 
-  const [password, setPassword] =
-    useState("");
+const [password, setPassword] =
+  useState("");
 
   const [loading, setLoading] =
     useState(false);
@@ -26,23 +40,28 @@ export default function CreateDoctorCard({
       setLoading(true);
 
       const response =
-        await fetch(
-          "/api/site-admin/create-doctor",
-          {
-            method: "POST",
+  await fetch(
+    mode === "edit"
+      ? `/api/site-admin/update-doctor/${initialData?.id}`
+      : "/api/site-admin/create-doctor",
+    {
+      method:
+        mode === "edit"
+          ? "PATCH"
+          : "POST",
 
-            headers: {
-              "Content-Type":
-                "application/json",
-            },
+      headers: {
+        "Content-Type":
+          "application/json",
+      },
 
-            body: JSON.stringify({
-              name,
-              email,
-              password,
-            }),
-          }
-        );
+      body: JSON.stringify({
+        name,
+        email,
+        password,
+      }),
+    }
+  );
 
       const data =
         await response.json();
@@ -50,7 +69,9 @@ export default function CreateDoctorCard({
       if (!response.ok) {
         alert(
           data.error ||
-            "Failed to create doctor"
+  (mode === "edit"
+    ? "Failed to update doctor"
+    : "Failed to create doctor")
         );
         return;
       }
@@ -76,8 +97,10 @@ onSuccess?.();
     <div className="bg-white rounded-2xl p-6 shadow">
 
       <h2 className="text-lg font-bold mb-4">
-        Create Doctor
-      </h2>
+  {mode === "edit"
+    ? "Edit Doctor"
+    : "Create Doctor"}
+</h2>
 
       <div className="space-y-3">
 
@@ -117,8 +140,12 @@ onSuccess?.();
           className="w-full bg-[#071739] text-white rounded-xl p-3"
         >
           {loading
-            ? "Creating..."
-            : "Create Doctor"}
+  ? mode === "edit"
+    ? "Saving..."
+    : "Creating..."
+  : mode === "edit"
+  ? "Save Changes"
+  : "Create Doctor"}
         </button>
 
       </div>

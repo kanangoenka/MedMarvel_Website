@@ -4,6 +4,10 @@ import { useEffect, useState } from "react";
 
 import CreateDoctorCard from "@/components/site-admin/CreateDoctorCard";
 import CreateTechnicianCard from "@/components/site-admin/CreateTechnicianCard";
+import {
+  Pencil,
+  Trash2,
+} from "lucide-react";
 
 import {
   Dialog,
@@ -17,6 +21,10 @@ export default function CreationPage() {
   const [technicianOpen, setTechnicianOpen] = useState(false);
   const [doctors, setDoctors] = useState<any[]>([]);
   const [technicians, setTechnicians] = useState<any[]>([]);
+  const [editingDoctor, setEditingDoctor] = useState<any>(null);
+  const [editDoctorOpen, setEditDoctorOpen] = useState(false);
+  const [editingTechnician, setEditingTechnician] = useState<any>(null);
+  const [editTechnicianOpen, setEditTechnicianOpen] = useState(false);
 
 
   async function fetchData() {
@@ -146,17 +154,21 @@ useEffect(() => {
         <td className="px-4 py-3">
   <div className="flex items-center gap-2">
     <button
-      className="
-        px-3 py-1
-        rounded-lg
-        bg-blue-100
-        text-blue-700
-        text-xs
-        font-medium
-      "
-    >
-      Edit
-    </button>
+  onClick={() => {
+    setEditingDoctor(doctor);
+    setEditDoctorOpen(true);
+  }}
+  className="
+    p-2
+    rounded-lg
+    hover:bg-blue-100
+    text-blue-600
+    transition
+  "
+  title="Edit"
+>
+  <Pencil size={16} />
+</button>
 
     <button
   onClick={async () => {
@@ -195,15 +207,15 @@ useEffect(() => {
     }
   }}
   className="
-    px-3 py-1
+    p-2
     rounded-lg
-    bg-red-100
-    text-red-700
-    text-xs
-    font-medium
+    hover:bg-red-100
+    text-red-600
+    transition
   "
+  title="Delete"
 >
-  Delete
+  <Trash2 size={16} />
 </button>
   </div>
 </td>
@@ -292,17 +304,21 @@ useEffect(() => {
         <td className="px-4 py-3">
   <div className="flex items-center gap-2">
     <button
+    onClick={() => {
+  setEditingTechnician(technician);
+  setEditTechnicianOpen(true);
+}}
       className="
-        px-3 py-1
-        rounded-lg
-        bg-blue-100
-        text-blue-700
-        text-xs
-        font-medium
-      "
-    >
-      Edit
-    </button>
+    p-2
+    rounded-lg
+    hover:bg-blue-100
+    text-blue-600
+    transition
+  "
+  title="Edit"
+>
+  <Pencil size={16} />
+</button>
 
     <button
   onClick={async () => {
@@ -341,15 +357,15 @@ useEffect(() => {
     }
   }}
   className="
-    px-3 py-1
+    p-2
     rounded-lg
-    bg-red-100
-    text-red-700
-    text-xs
-    font-medium
+    hover:bg-red-100
+    text-red-600
+    transition
   "
+  title="Delete"
 >
-  Delete
+  <Trash2 size={16} />
 </button>
   </div>
 </td>
@@ -368,6 +384,29 @@ useEffect(() => {
         open={doctorOpen}
         onOpenChange={setDoctorOpen}
       >
+      <Dialog
+  open={editDoctorOpen}
+  onOpenChange={setEditDoctorOpen}
+>
+  <DialogContent className="max-w-2xl">
+
+    {editingDoctor && (
+      <CreateDoctorCard
+        mode="edit"
+        initialData={editingDoctor}
+        onSuccess={() => {
+          setEditDoctorOpen(false);
+
+          setEditingDoctor(null);
+
+          fetchData();
+        }}
+      />
+    )}
+
+  </DialogContent>
+</Dialog>
+
         <DialogContent className="max-w-2xl">
 
           <CreateDoctorCard
@@ -379,7 +418,36 @@ useEffect(() => {
 />
         </DialogContent>
       </Dialog>
+<Dialog
+  open={editTechnicianOpen}
+  onOpenChange={
+    setEditTechnicianOpen
+  }
+>
+  <DialogContent className="max-w-2xl">
 
+    {editingTechnician && (
+      <CreateTechnicianCard
+        mode="edit"
+        initialData={
+          editingTechnician
+        }
+        onSuccess={() => {
+          setEditTechnicianOpen(
+            false
+          );
+
+          setEditingTechnician(
+            null
+          );
+
+          fetchData();
+        }}
+      />
+    )}
+
+  </DialogContent>
+</Dialog>
       <Dialog
         open={technicianOpen}
         onOpenChange={setTechnicianOpen}
