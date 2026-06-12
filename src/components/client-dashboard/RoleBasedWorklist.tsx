@@ -18,6 +18,7 @@ import {
   Download,
    Upload,
   CheckCircle2,
+  FolderOpen,
 } from "lucide-react";
 
 type RoleBasedWorklistProps = {
@@ -55,6 +56,13 @@ const [uploadingStudyId, setUploadingStudyId] =
   const [comments, setComments] = useState<any[]>([]);
   const [message, setMessage] = useState("");
   const [commentsLoading, setCommentsLoading] = useState(false);
+
+
+  const [filesModalOpen, setFilesModalOpen] =
+  useState(false);
+
+const [selectedFiles, setSelectedFiles] =
+  useState<any[]>([]);
 
   // FORM STATES
   const [patientId, setPatientId] = useState("");
@@ -767,12 +775,10 @@ useEffect(() => {
 )}
 
 <th className="px-6 py-4 text-sm font-semibold text-gray-600">
-  Imaging Link
+  Link to Patient Data
 </th>
 
-<th className="px-6 py-4 text-sm font-semibold text-gray-600">
-  Uploaded Files
-</th>
+
                 <th className="px-6 py-4 text-sm font-semibold text-gray-600">Status</th>
                 <th className="px-6 py-4 text-sm font-semibold text-gray-600">Date &amp; Time</th>
                 <th className="px-6 py-4 text-sm font-semibold text-gray-600">Actions</th>
@@ -826,25 +832,7 @@ useEffect(() => {
 </td>
 
                   {/* UPLOADED FILES — " filename" */}
-                  <td className="px-6 py-4">
-                    {study.files && study.files.length > 0 ? (
-                      <div className="space-y-1">
-                        {study.files.map((f: any) => (
-                          <div
-                            key={f.id}
-                            className="flex items-center gap-1.5 text-[11px] text-green-700 font-medium"
-                          >
-                            <CheckCircle2 size={11} className="text-green-500 shrink-0" />
-                            <span className="truncate max-w-[140px]">
-                              {f.fileName}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <span className="text-gray-400 text-xs">No files</span>
-                    )}
-                  </td>
+                 
 
                   <td className="px-6 py-4">
                     <span
@@ -866,6 +854,35 @@ useEffect(() => {
 
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
+
+                      <button
+  onClick={() => {
+    setSelectedFiles(study.files || []);
+    setFilesModalOpen(true);
+  }}
+  disabled={!study.files?.length}
+  className="flex items-center gap-1"
+>
+  <FolderOpen
+    size={18}
+    className={
+      study.files?.length
+        ? "text-green-600"
+        : "text-gray-300"
+    }
+  />
+
+  {study.files?.length > 0 && (
+    <span className="text-xs font-medium text-gray-600">
+      {study.files.length}
+    </span>
+  )}
+</button>
+
+                      
+
+
+
                       <button
                         onClick={() => router.push(`/viewer/${study.id}`)}
                         className="p-2 rounded-lg hover:bg-blue-50 transition"
@@ -1031,6 +1048,44 @@ useEffect(() => {
 doctorId={doctorId}
 setDoctorId={setDoctorId}
       />
+
+      {filesModalOpen && (
+  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div className="bg-white rounded-xl p-6 w-[500px] max-h-[500px] overflow-y-auto">
+      <h2 className="text-lg font-semibold mb-4">
+        Uploaded Files
+      </h2>
+
+      {selectedFiles.length > 0 ? (
+        <div className="space-y-2">
+          {selectedFiles.map(
+            (file: any) => (
+              <div
+                key={file.id}
+                className="border rounded-lg p-2"
+              >
+                {file.fileName}
+              </div>
+            )
+          )}
+        </div>
+      ) : (
+        <p className="text-gray-500">
+          No files uploaded
+        </p>
+      )}
+
+      <button
+        onClick={() =>
+          setFilesModalOpen(false)
+        }
+        className="mt-4 px-4 py-2 bg-[#071739] text-white rounded-lg"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+)}
 
       {/* COMMENTS MODAL */}
       {showCommentsModal && (
