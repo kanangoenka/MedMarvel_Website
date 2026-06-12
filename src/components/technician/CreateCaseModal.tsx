@@ -540,7 +540,7 @@ export default function AddCaseModal({
 
                         {/* Diagnostic Report URL */}
                         <div className="space-y-1 mb-4">
-                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide block">Diagnostic Report Link</span>
+                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide block">Link to patient data</span>
                             <div className="relative">
                                 <LinkIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" size={12} />
                                 <input
