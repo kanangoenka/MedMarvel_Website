@@ -16,36 +16,36 @@ model Institution {
   users     User[]
 }
 
-model Site {
-  id                  String                   @id @default(cuid())
-  name                String
-  institutionId       String
-  isActive            Boolean                  @default(true)
-  createdAt           DateTime                 @default(now())
-  operatorAssignments OperatorSiteAssignment[]
-  institution         Institution              @relation(fields: [institutionId], references: [id])
-  studies             Study[]
-  users               User[]
+model User {
+  id       String   @id @default(cuid())
+  name     String
+  email    String   @unique
+  password String
+  role     UserRole
+
+  institutionId String?
+  institution   Institution? @relation(fields: [institutionId], references: [id])
+
+  operatorAssignments OperatorSiteAssignment[] @relation("OperatorAssignments")
+
+  doctorStudies     Study[] @relation("DoctorStudies")
+  operatorStudies   Study[] @relation("OperatorStudies")
+  technicianStudies Study[] @relation("TechnicianStudies")
+  uploadedStudies   Study[] @relation("UploadedStudies")
+
+  comments StudyComment[]
 }
 
-model User {
-  id                  String                   @id @default(cuid())
-  name                String
-  email               String                   @unique
-  password            String
-  role                UserRole
-  institutionId       String?
-  siteId              String?
-  isActive            Boolean                  @default(true)
-  createdAt           DateTime                 @default(now())
-  operatorAssignments OperatorSiteAssignment[] @relation("OperatorAssignments")
-  doctorStudies       Study[]                  @relation("DoctorStudies")
-  operatorStudies     Study[]                  @relation("OperatorStudies")
-  technicianStudies   Study[]                  @relation("TechnicianStudies")
-  uploadedStudies     Study[]                  @relation("UploadedStudies")
-  comments            StudyComment[]
-  institution         Institution?             @relation(fields: [institutionId], references: [id])
-  site                Site?                    @relation(fields: [siteId], references: [id])
+model Site {
+  id   String @id @default(cuid())
+  name String
+
+  institutionId String
+  institution   Institution @relation(fields: [institutionId], references: [id])
+
+  operatorAssignments OperatorSiteAssignment[]
+
+  studies Study[]
 }
 
 model OperatorSiteAssignment {
@@ -68,27 +68,27 @@ model Patient {
 }
 
 model Study {
-  id               String         @id @default(cuid())
-  caseNumber       String         @unique
+  id               String            @id @default(cuid())
+  caseNumber       String            @unique
   studyDescription String?
   modality         String?
-  status           StudyStatus    @default(UPLOADED)
+  status           StudyStatus       @default(UPLOADED)
   patientId        String?
   siteId           String
   technicianId     String?
   doctorId         String
   operatorId       String?
   imagingLink      String?
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
   uploadedById     String
   report           Report?
-  doctor           User           @relation("DoctorStudies", fields: [doctorId], references: [id])
-  operator         User?          @relation("OperatorStudies", fields: [operatorId], references: [id])
-  patient          Patient?       @relation(fields: [patientId], references: [id])
-  site             Site           @relation(fields: [siteId], references: [id])
-  technician       User?          @relation("TechnicianStudies", fields: [technicianId], references: [id])
-  uploadedBy       User           @relation("UploadedStudies", fields: [uploadedById], references: [id])
+  doctor           User              @relation("DoctorStudies", fields: [doctorId], references: [id])
+  operator         User?             @relation("OperatorStudies", fields: [operatorId], references: [id])
+  patient          Patient?          @relation(fields: [patientId], references: [id])
+  site             Site              @relation(fields: [siteId], references: [id])
+  technician       User?             @relation("TechnicianStudies", fields: [technicianId], references: [id])
+  uploadedBy       User              @relation("UploadedStudies", fields: [uploadedById], references: [id])
   comments         StudyComment[]
   files            StudyFile[]
   outputFiles      StudyOutputFile[]
@@ -100,30 +100,30 @@ model Study {
 }
 
 model StudyFile {
-  id         String       @id @default(cuid())
-  studyId    String
+  id      String @id @default(cuid())
+  studyId String
 
-  fileName   String
-  fileUrl    String
-  fileType   String
+  fileName String
+  fileUrl  String
+  fileType String
 
-  category   FileCategory @default(INPUT)
+  category FileCategory @default(INPUT)
 
   folderPath String?
 
-  createdAt  DateTime @default(now())
+  createdAt DateTime @default(now())
 
-  study      Study @relation(fields: [studyId], references: [id])
+  study Study @relation(fields: [studyId], references: [id])
 }
 
 model StudyOutputFile {
-  id         String   @id @default(cuid())
+  id String @id @default(cuid())
 
-  studyId    String
+  studyId String
 
-  fileName   String
-  fileUrl    String
-  fileType   String
+  fileName String
+  fileUrl  String
+  fileType String
 
   uploadedAt DateTime @default(now())
 
