@@ -40,7 +40,6 @@ export async function GET(
 
         include: {
           patient: true,
-          outputFiles: true,
 
           site: {
             select: {
@@ -277,7 +276,6 @@ export async function PATCH(
           patient: true,
           files: true,
           report: true,
-          outputFiles: true,
         },
       });
 

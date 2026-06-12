@@ -104,8 +104,6 @@ export async function GET() {
 
         include: {
           patient: true,
-          outputFiles: true,
-
           doctor: {
             select: {
               id: true,
