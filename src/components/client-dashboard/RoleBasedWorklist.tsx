@@ -480,12 +480,13 @@ useEffect(() => {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            patientId,
-            patientName,
-            studyDescription,
-            modality: selectedModalities.join(", "),
-            imagingLink,
-          }),
+  patientId,
+  patientName,
+  studyDescription,
+  modality: selectedModalities.join(", "),
+  imagingLink: reportUrl,
+  doctorId,
+}),
         });
 
         const data = await response.json();
@@ -495,13 +496,13 @@ useEffect(() => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            patientId,
-            patientName,
-            studyDescription,
-            modality: selectedModalities.join(", "),
-            imagingLink,
-            doctorId,
-          }),
+  patientId,
+  patientName,
+  studyDescription,
+  modality: selectedModalities.join(", "),
+  imagingLink: reportUrl,
+  doctorId,
+}),
         });
 
         const data = await response.json();
@@ -755,13 +756,23 @@ useEffect(() => {
                 <th className="px-6 py-4 text-sm font-semibold text-gray-600">Patient ID</th>
                 <th className="px-6 py-4 text-sm font-semibold text-gray-600">Patient Name</th>
                 <th className="px-6 py-4 text-sm font-semibold text-gray-600">Study Description</th>
-                <th className="px-6 py-4 text-sm font-semibold text-gray-600">Modality</th>
-                {(role === "OPERATOR" || role === "TECHNICIAN") && (
+                <th className="px-6 py-4 text-sm font-semibold text-gray-600">
+  Modality
+</th>
+
+{(role === "OPERATOR" || role === "TECHNICIAN") && (
   <th className="px-6 py-4 text-sm font-semibold text-gray-600">
     Doctor
   </th>
 )}
-                <th className="px-6 py-4 text-sm font-semibold text-gray-600">Uploaded Files</th>
+
+<th className="px-6 py-4 text-sm font-semibold text-gray-600">
+  Imaging Link
+</th>
+
+<th className="px-6 py-4 text-sm font-semibold text-gray-600">
+  Uploaded Files
+</th>
                 <th className="px-6 py-4 text-sm font-semibold text-gray-600">Status</th>
                 <th className="px-6 py-4 text-sm font-semibold text-gray-600">Date &amp; Time</th>
                 <th className="px-6 py-4 text-sm font-semibold text-gray-600">Actions</th>
@@ -796,6 +807,23 @@ useEffect(() => {
     {study.doctor?.name || "-"}
   </td>
 )}
+
+<td className="px-6 py-4 text-sm">
+  {study.imagingLink ? (
+    <a
+      href={study.imagingLink}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-blue-600 hover:underline font-medium"
+    >
+      Open Link
+    </a>
+  ) : (
+    <span className="text-gray-400">
+      No Link
+    </span>
+  )}
+</td>
 
                   {/* UPLOADED FILES — " filename" */}
                   <td className="px-6 py-4">
