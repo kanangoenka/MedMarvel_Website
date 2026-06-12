@@ -83,9 +83,9 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    <div className="min-h-screen flex items-center justify-center bg-[#F7FAFC]">
 
-      <div className="w-full max-w-md bg-white p-6 rounded-2xl shadow-lg">
+      <div className="w-full max-w-md bg-white p-8 rounded-3xl shadow-xl border border-gray-100">
 
         <div className="flex flex-col items-center mb-6">
 
@@ -98,9 +98,15 @@ export default function LoginPage() {
             className="mb-3"
           />
 
-          <h1 className="text-3xl font-bold text-center text-blue-700">
-            MedMarvel Software Solutions
-          </h1>
+          <div className="text-center">
+  <h1 className="text-4xl font-light tracking-wide text-[#173B67]">
+    MEDMARVEL
+  </h1>
+
+  <p className="mt-1 text-sm tracking-[0.30em] text-[#2FAFB8] uppercase">
+    Software Solutions
+  </p>
+</div>
 
         </div>
 
@@ -122,7 +128,7 @@ export default function LoginPage() {
                   e.target.value
                 )
               }
-              className="w-full border rounded-lg px-4 py-2"
+              className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#2FAFB8] focus:border-transparent"
               required
             />
           </div>
@@ -140,7 +146,7 @@ export default function LoginPage() {
                   e.target.value
                 )
               }
-              className="w-full border rounded-lg px-4 py-2"
+              className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#2FAFB8] focus:border-transparent"
               required
             />
           </div>
@@ -154,7 +160,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+            className="w-full bg-[#173B67] text-white py-2.5 rounded-lg font-medium hover:bg-[#122F53] transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50"
           >
             {loading
               ? "Logging in..."

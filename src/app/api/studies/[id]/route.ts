@@ -123,3 +123,177 @@ export async function GET(
     );
   }
 }
+
+export async function DELETE(
+  req: Request,
+  {
+    params,
+  }: {
+    params: Promise<{
+      id: string;
+    }>;
+  }
+) {
+  try {
+    const currentUser =
+      await getCurrentUser();
+
+    if (!currentUser) {
+      return NextResponse.json(
+        {
+          error: "Unauthorized",
+        },
+        {
+          status: 401,
+        }
+      );
+    }
+
+    const { id } =
+      await params;
+
+    await prisma.studyComment.deleteMany({
+      where: {
+        studyId: id,
+      },
+    });
+
+    await prisma.studyFile.deleteMany({
+      where: {
+        studyId: id,
+      },
+    });
+
+    await prisma.report.deleteMany({
+      where: {
+        studyId: id,
+      },
+    });
+
+    await prisma.study.delete({
+      where: {
+        id,
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+    });
+  } catch (error) {
+    console.error(error);
+
+    return NextResponse.json(
+      {
+        error:
+          "Failed to delete study",
+      },
+      {
+        status: 500,
+      }
+    );
+  }
+}
+
+
+export async function PATCH(
+  req: Request,
+  {
+    params,
+  }: {
+    params: Promise<{
+      id: string;
+    }>;
+  }
+) {
+  try {
+    const currentUser =
+      await getCurrentUser();
+
+    if (!currentUser) {
+      return NextResponse.json(
+        {
+          error: "Unauthorized",
+        },
+        {
+          status: 401,
+        }
+      );
+    }
+
+    const { id } =
+      await params;
+
+    const body =
+      await req.json();
+
+    const {
+      patientId,
+      patientName,
+      studyDescription,
+      modality,
+      imagingLink,
+    } = body;
+
+    const study =
+      await prisma.study.findUnique({
+        where: { id },
+      });
+
+    if (!study) {
+      return NextResponse.json(
+        {
+          error: "Study not found",
+        },
+        {
+          status: 404,
+        }
+      );
+    }
+
+    if (study.patientId) {
+      await prisma.patient.update({
+        where: {
+          id: study.patientId,
+        },
+        data: {
+          patientId,
+          patientName,
+        },
+      });
+    }
+
+    const updatedStudy =
+      await prisma.study.update({
+        where: {
+          id,
+        },
+        data: {
+          studyDescription,
+          modality,
+          imagingLink,
+        },
+        include: {
+          patient: true,
+          files: true,
+          report: true,
+        },
+      });
+
+    return NextResponse.json({
+      success: true,
+      study: updatedStudy,
+    });
+  } catch (error) {
+    console.error(error);
+
+    return NextResponse.json(
+      {
+        error:
+          "Failed to update study",
+      },
+      {
+        status: 500,
+      }
+    );
+  }
+}

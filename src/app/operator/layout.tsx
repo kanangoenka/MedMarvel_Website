@@ -1,15 +1,12 @@
-import { ReactNode } from "react";
 import DashboardShell from "@/components/dashboard/DashboardShell";
-
-type OperatorLayoutProps = {
-  children: ReactNode;
-};
 
 export default function OperatorLayout({
   children,
-}: OperatorLayoutProps) {
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <DashboardShell>
+    <DashboardShell role="OPERATOR">
       {children}
     </DashboardShell>
   );

@@ -18,17 +18,17 @@ export default function HomePage() {
         className="mb-6"
       />
 
-      <h1 className="text-5xl font-bold text-blue-700 text-center">
-        MEDMARVEL
-      </h1>
+      <h1 className="text-6xl font-light tracking-wide text-[#173B67] text-center">
+  MEDMARVEL
+</h1>
 
-      <p className="mt-2 text-xl text-gray-600 text-center">
-        Software Solutions
-      </p>
+<p className="mt-2 text-xl tracking-[0.35em] text-[#2FAFB8] uppercase text-center">
+  Software Solutions
+</p>
 
       <button
         onClick={() => router.push("/login")}
-        className="mt-10 px-10 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition"
+        className="mt-10 px-10 py-3 bg-[#173B67] text-white rounded-xl font-semibold hover:bg-[#122F53] transition-all duration-200 shadow-md hover:shadow-lg"
       >
         Login
       </button>

@@ -1,21 +1,30 @@
 import StatsGrid from "@/components/dashboard/StatsGrid";
+import prisma from "@/lib/prisma";
 
-export default function SuperAdminPage() {
+export default async function SuperAdminPage() {
+  const [institutions, sites, users] =
+    await Promise.all([
+      prisma.institution.count(),
+      prisma.site.count(),
+      prisma.user.count(),
+    ]);
+
   const stats = [
     {
       title: "Total Institutions",
-      value: 12,
+      value: institutions,
       description: "Registered institutions",
     },
     {
       title: "Total Sites",
-      value: 48,
+      value: sites,
       description: "Across all institutions",
     },
     {
       title: "Total Users",
-      value: 256,
-      description: "Doctors, technicians and operators",
+      value: users,
+      description:
+        "Doctors, technicians and operators",
     },
   ];
 

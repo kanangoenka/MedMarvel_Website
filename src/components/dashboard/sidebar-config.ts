@@ -48,8 +48,8 @@ export const sidebarConfig = {
       icon: ClipboardList,
     },
     {
-      label: "Creation",
-      href: "/site-admin/creation",
+      label: "User Management",
+      href: "/site-admin/user-management",
       icon: PlusCircle,
     },
   ],
@@ -57,7 +57,7 @@ export const sidebarConfig = {
   TECHNICIAN: [
     {
       label: "Worklist",
-      href: "/technician/worklist",
+      href: "/technician",
       icon: ClipboardList,
     },
   ],
@@ -65,7 +65,7 @@ export const sidebarConfig = {
   DOCTOR: [
     {
       label: "Worklist",
-      href: "/doctor/worklist",
+      href: "/doctor",
       icon: ClipboardList,
     },
   ],
@@ -77,8 +77,8 @@ export const sidebarConfig = {
       icon: LayoutDashboard,
     },
     {
-      label: "Creation",
-      href: "/operation-head/creation",
+      label: "User Management",
+      href: "/operation-head/user-management",
       icon: PlusCircle,
     },
   ],
@@ -86,7 +86,7 @@ export const sidebarConfig = {
   OPERATOR: [
     {
       label: "Worklist",
-      href: "/operator/worklist",
+      href: "/operator",
       icon: ClipboardList,
     },
   ],

@@ -46,6 +46,7 @@ export async function POST(req: Request) {
       doctorId,
       studyDescription,
       modality,
+      imagingLink,
     } = body;
 
     if (
@@ -109,35 +110,37 @@ export async function POST(req: Request) {
     const caseNumber =
   generateCaseNumber();
 
-    const study =
-      await prisma.study.create({
-        data: {
-          caseNumber,
+   const study =
+  await prisma.study.create({
+    data: {
+      caseNumber,
 
-          patientId:
-            patient.id,
+      patientId:
+        patient.id,
 
-          siteId:
-            currentUser.siteId!,
+      siteId:
+        currentUser.siteId!,
 
-          uploadedById:
-            currentUser.id,
+      uploadedById:
+        currentUser.id,
 
-          technicianId,
+      technicianId,
 
-          doctorId:
-            finalDoctorId,
+      doctorId:
+        finalDoctorId,
 
-          studyDescription,
+      studyDescription,
 
-          modality,
-        },
+      modality,
 
-        include: {
-          patient: true,
-          doctor: true,
-        },
-      });
+      imagingLink,   // <-- ADD THIS
+    },
+
+    include: {
+      patient: true,
+      doctor: true,
+    },
+  });
 
     return NextResponse.json({
       success: true,

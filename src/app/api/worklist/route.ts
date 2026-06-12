@@ -56,31 +56,9 @@ export async function GET() {
         };
         break;
 
-      case "OPERATION_HEAD": {
-        const assignments =
-          await prisma.operationHeadSiteAssignment.findMany(
-            {
-              where: {
-                operationHeadId:
-                  currentUser.id,
-              },
-            }
-          );
-
-        const siteIds =
-          assignments.map(
-            (assignment) =>
-              assignment.siteId
-          );
-
-        where = {
-          siteId: {
-            in: siteIds,
-          },
-        };
-
-        break;
-      }
+      case "OPERATION_HEAD":
+  where = {};
+  break;
 
       case "OPERATOR": {
         const assignments =
@@ -126,7 +104,6 @@ export async function GET() {
 
         include: {
           patient: true,
-
           doctor: {
             select: {
               id: true,

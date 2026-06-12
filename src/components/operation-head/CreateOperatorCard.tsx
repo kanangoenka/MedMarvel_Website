@@ -7,12 +7,31 @@ type Site = {
   name: string;
 };
 
-export default function CreateOperatorCard() {
-  const [name, setName] =
-    useState("");
+type CreateOperatorCardProps = {
+  onSuccess?: () => void;
 
-  const [email, setEmail] =
-    useState("");
+  initialData?: {
+    id: string;
+    name: string;
+    email: string;
+    siteIds?: string[];
+  };
+
+  mode?: "create" | "edit";
+};
+
+export default function CreateOperatorCard({
+  onSuccess,
+  initialData,
+  mode = "create",
+}: CreateOperatorCardProps) {
+  const [name, setName] = useState(
+    initialData?.name ?? ""
+  );
+
+  const [email, setEmail] = useState(
+    initialData?.email ?? ""
+  );
 
   const [password, setPassword] =
     useState("");
@@ -21,7 +40,9 @@ export default function CreateOperatorCard() {
     useState<Site[]>([]);
 
   const [selectedSites, setSelectedSites] =
-    useState<string[]>([]);
+    useState<string[]>(
+      initialData?.siteIds ?? []
+    );
 
   const [loading, setLoading] =
     useState(false);
@@ -63,25 +84,30 @@ export default function CreateOperatorCard() {
       setLoading(true);
 
       const response =
-        await fetch(
-          "/api/operation-head/create-operator",
-          {
-            method: "POST",
+  await fetch(
+    mode === "edit"
+      ? `/api/operation-head/update-operator/${initialData?.id}`
+      : "/api/operation-head/create-operator",
+    {
+      method:
+        mode === "edit"
+          ? "PATCH"
+          : "POST",
 
-            headers: {
-              "Content-Type":
-                "application/json",
-            },
+      headers: {
+        "Content-Type":
+          "application/json",
+      },
 
-            body: JSON.stringify({
-              name,
-              email,
-              password,
-              siteIds:
-                selectedSites,
-            }),
-          }
-        );
+      body: JSON.stringify({
+        name,
+        email,
+        password,
+        siteIds:
+          selectedSites,
+      }),
+    }
+  );
 
       const data =
         await response.json();
@@ -89,26 +115,28 @@ export default function CreateOperatorCard() {
       if (!response.ok) {
         alert(
           data.error ||
-            "Failed to create operator"
+  (mode === "edit"
+    ? "Failed to update operator"
+    : "Failed to create operator")
         );
 
         return;
       }
-
-      alert(
-        "Operator created successfully"
-      );
 
       setName("");
       setEmail("");
       setPassword("");
       setSelectedSites([]);
 
+      onSuccess?.();
+
     } catch (error) {
       console.error(error);
 
       alert(
-        "Failed to create operator"
+        mode === "edit"
+          ? "Failed to update operator"
+          : "Failed to create operator"
       );
     } finally {
       setLoading(false);
@@ -119,7 +147,9 @@ export default function CreateOperatorCard() {
     <div className="bg-white rounded-2xl p-6 shadow">
 
       <h2 className="text-lg font-bold mb-4">
-        Create Operator
+        {mode === "edit"
+          ? "Edit Operator"
+          : "Create Operator"}
       </h2>
 
       <div className="space-y-3">
@@ -191,7 +221,11 @@ export default function CreateOperatorCard() {
           className="w-full bg-[#071739] text-white rounded-xl p-3"
         >
           {loading
-            ? "Creating..."
+            ? mode === "edit"
+              ? "Saving..."
+              : "Creating..."
+            : mode === "edit"
+            ? "Save Changes"
             : "Create Operator"}
         </button>
 

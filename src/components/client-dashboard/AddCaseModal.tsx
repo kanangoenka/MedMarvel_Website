@@ -40,6 +40,16 @@ interface AddCaseModalProps {
     reportUrl: string;
     setReportUrl: (val: string) => void;
 
+    
+
+    doctors: {
+    id: string;
+    name: string;
+}[];
+
+doctorId: string;
+setDoctorId: (val: string) => void;
+
     // Files states
     mriFile: File[];
     setmriFile: (val: File[]) => void;
@@ -69,6 +79,7 @@ interface AddCaseModalProps {
 
     // Assigned doctor (the logged-in doctor's name — read-only)
     assignedDoctorName?: string;
+    role?: string;
 
     // Existing uploaded files when editing
     existingFiles?: ExistingFile[];
@@ -91,6 +102,10 @@ export default function AddCaseModal({
     setStudyDescription,
     reportUrl,
     setReportUrl,
+    doctors,
+doctorId,
+setDoctorId,
+    role,
     mriFile,
     setmriFile,
     petFile,
@@ -154,13 +169,42 @@ export default function AddCaseModal({
                 </div>
 
                 {/* ASSIGNED DOCTOR banner (read-only) */}
-                {assignedDoctorName && (
+                {role === "DOCTOR" && assignedDoctorName && (
                     <div className="mx-6 mt-3 flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-xl px-4 py-2.5">
                         <Stethoscope size={14} className="text-blue-600 shrink-0" />
                         <span className="text-[11px] font-bold text-blue-500 uppercase tracking-wider">Assigned Doctor:</span>
                         <span className="text-[12px] font-bold text-blue-800">{assignedDoctorName}</span>
                     </div>
                 )}
+                {role === "TECHNICIAN" && (
+    <div className="mx-6 mt-3">
+        <label className="block text-sm font-medium mb-2">
+            Assign Doctor
+        </label>
+
+        <select
+            value={doctorId}
+            onChange={(e) =>
+                setDoctorId(e.target.value)
+            }
+            className="w-full border rounded-xl px-4 py-3"
+        >
+            <option value="">
+                Select Doctor
+            </option>
+
+            {doctors.map((doctor) => (
+                <option
+                    key={doctor.id}
+                    value={doctor.id}
+                >
+                    {doctor.name}
+                </option>
+            ))}
+        </select>
+    </div>
+)}
+                      
 
                 {/* 2-Column Layout: Left = Patient + Modalities | Right = Report + Documents */}
                 <div className="px-6 py-4 grid grid-cols-2 gap-5 bg-[#fcfcfd]">
@@ -524,7 +568,7 @@ export default function AddCaseModal({
 
                         {/* Diagnostic Report URL */}
                         <div className="space-y-1 mb-4">
-                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide block">Diagnostic Report Link</span>
+                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide block">Link To Patient Data</span>
                             <div className="relative">
                                 <LinkIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" size={12} />
                                 <input
